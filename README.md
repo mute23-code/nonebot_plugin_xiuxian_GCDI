@@ -27,11 +27,11 @@ _:tada::tada::tada:修仙模拟器！:tada::tada::tada:_
 - 使用github处拉取源码使用
 无镜像：
 ```
-git clone https://github.com/QingMuCat/nonebot_plugin_xiuxian
+git clone https://github.com/QingMuCat/nonebot_plugin_xiuxian_GCDI
 ```
 镜像：https://ghproxy.com/
 ```
-git clone https://ghproxy.com/https://github.com/QingMuCat/nonebot_plugin_xiuxian
+git clone https://ghproxy.com/https://github.com/QingMuCat/nonebot_plugin_xiuxian_GCDI
 ```
 
 2、下载数据文件
@@ -47,7 +47,7 @@ pip install nonebot_plugin_guild_patch -i https://pypi.tuna.tsinghua.edu.cn/simp
 
 4、如果遇到问题，请先百度和查看下方的 【一些问题】
 
-5、如解决不了进交流群：760517008 提问，提问请贴上完整的日志
+5、如解决不了进交流群：588907147 提问，提问请贴上完整的日志
 
 ## 配置文件
 1、配置文件一般在data/xiuxian文件夹下，自行按照json格式修改即可，一些字段的含义可以进群交流<br>
@@ -69,12 +69,12 @@ git pull
 ![image](https://raw.githubusercontent.com/QingMuCat/qm/master/xiuxian/%E9%A2%91%E9%81%93%E7%B4%A0%E6%9D%902.png)
 ## 一些问题
 
-- 当前首次使用，未自动创建json文件及sql文件，请在[github](https://github.com/s52047qwas/nonebot_plugin_xiuxian)处，目录data -> xiuxian
+- 当前首次使用，未自动创建json文件及sql文件，请在[github](https://github.com/QingMuCat/nonebot_plugin_xiuxian_GCDI)处，目录data -> xiuxian
 处下载的文件，放置于bot目录，data -> xiuxian文件夹处
 - 当为放置为plugins目录使用时，请修改根目录下__init__.py文件中的42行：src=''中的内容，填写的是存放插件的目录，一般情况下 src='src.plugins.'  如有不同请按照格式修改
 ## 特别感谢
 
-- [NoneBot2](https://github.com/nonebot/nonebot2)：本插件实装的开发框架。
+- [NoneBot2](https://github.com/nonebot/nonebot2)：本插件实装的开发框架，NB天下第一可爱。
 - [go-cqhttp](https://github.com/Mrs4s/go-cqhttp)：稳定完善的 CQHTTP 实现。
 - [nonebot_plugin_xiuxian](https://github.com/s52047qwas/nonebot_plugin_xiuxian)：原版修仙
 
@@ -88,8 +88,8 @@ git pull
 
 大家喜欢的话可以给这个项目点个star
 
-有bug、意见和建议都欢迎提交 [Issues](https://github.com/QingMuCat/nonebot_plugin_xiuxian/issues) 
-或者联系进入QQ交流群：760517008
+有bug、意见和建议都欢迎提交 [Issues](https://github.com/QingMuCat/nonebot_plugin_xiuxian_GCDI/issues) 
+或者联系进入QQ交流群：588907147
 
 ## 许可证
 本项目使用 [MIT](https://choosealicense.com/licenses/mit/) 作为开源许可证
@@ -97,5 +97,6 @@ git pull
 ## 饼（不知多久会实现）
 TODO：
 1.重构本项目，不影响数据情况下，使用户完美迁移；
-2.增加功能，有想法的直接加我QQ1242550160，细聊；
-3.云端计划：咕咕-----
+2.一套代码跑所有BOT平台；
+3.增加功能，有想法的直接加群588907147
+4.云端计划（遥遥无期）：大概就是把数据搬上云端，这样让所有bot链接数据库，共用数据库
