@@ -1,7 +1,7 @@
 # nonebot_plugin_xiuxian_GCDI
 
-_:tada::tada::tada:修仙模拟器！:tada::tada::tada:_
-_:tada::tada::tada:群与频道数据互通:tada::tada::tada:_
+_:tada::tada::tada:修仙模拟器！:tada::tada::tada:_<br>
+_:tada::tada::tada:群与频道数据互通:tada::tada::tada:_<br>
 ## 简介
 
 本插件主要为实现群聊修仙功能,最近经常封号，请自行判断后再使用，已默认转成图片模式，如需关闭，可在config.py处调整img字段为false
