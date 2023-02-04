@@ -23,7 +23,7 @@ from datetime import datetime
 from ..xiuxian_opertion import do_is_work
 from ..cd_manager import add_cd, check_cd, cd_msg
 from nonebot.log import logger
-from ..utils import data_check_conf, check_user, send_forward_msg, get_msg_pic
+from ..utils import data_check_conf, check_user, send_forward_msg, get_msg_pic, send_img_msg
 from ..item_json import Items
 from .mixelixirutil import get_mix_elixir_msg, tiaohe, check_mix,make_dict
 from ..read_buff import get_player_info, save_player_info
@@ -69,46 +69,26 @@ async def _(bot: Bot, event: MessageEvent, args: Message = CommandArg()):
     await data_check_conf(bot, event)
     isUser, user_info, msg = check_user(event)
     if not isUser:
-        if XiuConfig().img:
-            pic = await get_msg_pic(msg)
-            await mix_elixir_sqdj_up.finish(MessageSegment.image(pic), at_sender=True)
-        else:
-            await mix_elixir_sqdj_up.finish(msg, at_sender=True)
+        await send_img_msg(bot, event, msg)
     user_id = user_info.user_id
     if int(user_info.blessed_spot_flag) == 0:
         msg = f"道友还没有洞天福地呢，请发送洞天福地购买吧~"
-        if XiuConfig().img:
-            pic = await get_msg_pic(msg)
-            await mix_elixir_sqdj_up.finish(MessageSegment.image(pic), at_sender=True)
-        else:
-            await mix_elixir_sqdj_up.finish(msg, at_sender=True)
+        await send_img_msg(bot, event, msg)
     SQDJCONFIG = MIXELIXIRCONFIG['收取等级']
     mix_elixir_info = get_player_info(user_id, "mix_elixir_info")
     now_level = mix_elixir_info['收取等级']
     if now_level >= len(SQDJCONFIG):
         msg = f"道友的收取等级已达到最高等级，无法升级了"
-        if XiuConfig().img:
-            pic = await get_msg_pic(msg)
-            await mix_elixir_sqdj_up.finish(MessageSegment.image(pic), at_sender=True)
-        else:
-            await mix_elixir_sqdj_up.finish(msg, at_sender=True)
+        await send_img_msg(bot, event, msg)
     next_level_cost = SQDJCONFIG[str(now_level + 1)]['level_up_cost']
     if mix_elixir_info['炼丹经验'] < next_level_cost:
         msg = f"下一个收取等级所需要的炼丹经验为{next_level_cost}点，道友请炼制更多的丹药再来升级吧~"
-        if XiuConfig().img:
-            pic = await get_msg_pic(msg)
-            await mix_elixir_sqdj_up.finish(MessageSegment.image(pic), at_sender=True)
-        else:
-            await mix_elixir_sqdj_up.finish(msg, at_sender=True)
+        await send_img_msg(bot, event, msg)
     mix_elixir_info['炼丹经验'] = mix_elixir_info['炼丹经验'] - next_level_cost
     mix_elixir_info['收取等级'] = now_level + 1
     save_player_info(user_id, mix_elixir_info, 'mix_elixir_info')
     msg = f"道友的收取等级目前为：{mix_elixir_info['收取等级']}级，可以使灵田收获的药材增加{mix_elixir_info['收取等级']}个！"
-    if XiuConfig().img:
-        pic = await get_msg_pic(msg)
-        await mix_elixir_sqdj_up.finish(MessageSegment.image(pic), at_sender=True)
-    else:
-        await mix_elixir_sqdj_up.finish(msg, at_sender=True)
+    await send_img_msg(bot, event, msg)
     
 @mix_elixir_dykh_up.handle()
 async def _(bot: Bot, event: MessageEvent, args: Message = CommandArg()):
@@ -116,39 +96,23 @@ async def _(bot: Bot, event: MessageEvent, args: Message = CommandArg()):
     await data_check_conf(bot, event)
     isUser, user_info, msg = check_user(event)
     if not isUser:
-        if XiuConfig().img:
-            pic = await get_msg_pic(msg)
-            await mix_elixir_dykh_up.finish(MessageSegment.image(pic), at_sender=True)
-        else:
-            await mix_elixir_dykh_up.finish(msg, at_sender=True)
+        await send_img_msg(bot, event, msg)
     user_id = user_info.user_id
     DYKHCONFIG = MIXELIXIRCONFIG['丹药控火']
     mix_elixir_info = get_player_info(user_id, "mix_elixir_info")
     now_level = mix_elixir_info['丹药控火']
     if now_level >= len(DYKHCONFIG):
         msg = f"道友的丹药控火等级已达到最高等级，无法升级了"
-        if XiuConfig().img:
-            pic = await get_msg_pic(msg)
-            await mix_elixir_dykh_up.finish(MessageSegment.image(pic), at_sender=True)
-        else:
-            await mix_elixir_dykh_up.finish(msg, at_sender=True)
+        await send_img_msg(bot, event, msg)
     next_level_cost = DYKHCONFIG[str(now_level + 1)]['level_up_cost']
     if mix_elixir_info['炼丹经验'] < next_level_cost:
         msg = f"下一个丹药控火等级所需要的炼丹经验为{next_level_cost}点，道友请炼制更多的丹药再来升级吧~"
-        if XiuConfig().img:
-            pic = await get_msg_pic(msg)
-            await mix_elixir_dykh_up.finish(MessageSegment.image(pic), at_sender=True)
-        else:
-            await mix_elixir_dykh_up.finish(msg, at_sender=True)
+        await send_img_msg(bot, event, msg)
     mix_elixir_info['炼丹经验'] = mix_elixir_info['炼丹经验'] - next_level_cost
     mix_elixir_info['丹药控火'] = now_level + 1
     save_player_info(user_id, mix_elixir_info, 'mix_elixir_info')
     msg = f"道友的丹药控火等级目前为：{mix_elixir_info['丹药控火']}级，可以使炼丹收获的丹药增加{mix_elixir_info['丹药控火']}个！"
-    if XiuConfig().img:
-        pic = await get_msg_pic(msg)
-        await mix_elixir_dykh_up.finish(MessageSegment.image(pic), at_sender=True)
-    else:
-        await mix_elixir_dykh_up.finish(msg, at_sender=True)
+    await send_img_msg(bot, event, msg)
 
 @mix_elixir_nyx_up.handle()
 async def _(bot: Bot, event: MessageEvent, args: Message = CommandArg()):
@@ -156,17 +120,9 @@ async def _(bot: Bot, event: MessageEvent, args: Message = CommandArg()):
     await data_check_conf(bot, event)
     isUser, user_info, msg = check_user(event)
     if not isUser:
-        if XiuConfig().img:
-            pic = await get_msg_pic(msg)
-            await mix_elixir_nyx_up.finish(MessageSegment.image(pic), at_sender=True)
-        else:
-            await mix_elixir_nyx_up.finish(msg, at_sender=True)
+        await send_img_msg(bot, event, msg)
     msg = f"丹药耐药性的升级目前未开放！"
-    if XiuConfig().img:
-        pic = await get_msg_pic(msg)
-        await mix_elixir_nyx_up.finish(MessageSegment.image(pic), at_sender=True)
-    else:
-        await mix_elixir_nyx_up.finish(msg, at_sender=True)
+    await send_img_msg(bot, event, msg)
 
 @yaocai_get.handle()
 async def _(bot: Bot, event: MessageEvent, args: Message = CommandArg()):
@@ -174,19 +130,11 @@ async def _(bot: Bot, event: MessageEvent, args: Message = CommandArg()):
     await data_check_conf(bot, event)
     isUser, user_info, msg = check_user(event)
     if not isUser:
-        if XiuConfig().img:
-            pic = await get_msg_pic(msg)
-            await yaocai_get.finish(MessageSegment.image(pic), at_sender=True)
-        else:
-            await yaocai_get.finish(msg, at_sender=True)
+        await send_img_msg(bot, event, msg)
     user_id = user_info.user_id
     if int(user_info.blessed_spot_flag) == 0:
         msg = f"道友还没有洞天福地呢，请发送洞天福地购买吧~"
-        if XiuConfig().img:
-            pic = await get_msg_pic(msg)
-            await yaocai_get.finish(MessageSegment.image(pic), at_sender=True)
-        else:
-            await yaocai_get.finish(msg, at_sender=True)
+        await send_img_msg(bot, event, msg)
     mix_elixir_info = get_player_info(user_id, "mix_elixir_info")
     GETCONFIG = {
         "time_cost":48,#单位小时
@@ -220,29 +168,17 @@ async def _(bot: Bot, event: MessageEvent, args: Message = CommandArg()):
                     sql_message.send_back(user_info.user_id, k, goods_info['name'], '药材', v)
             mix_elixir_info['收取时间'] = nowtime
             save_player_info(user_id, mix_elixir_info, "mix_elixir_info")
-            if XiuConfig().img:
-                pic = await get_msg_pic(msg)
-                await yaocai_get.finish(MessageSegment.image(pic), at_sender=True)
-            else:
-                await yaocai_get.finish(msg, at_sender=True)
+            await send_img_msg(bot, event, msg)
         else:
             msg = f"道友的灵田还不能收取，下次收取时间为：{round(GETCONFIG['time_cost'] * (1 - (GETCONFIG['加速基数'] * mix_elixir_info['药材速度'])), 2) - timedeff}小时之后"
-            if XiuConfig().img:
-                pic = await get_msg_pic(msg)
-                await yaocai_get.finish(MessageSegment.image(pic), at_sender=True)
-            else:
-                await yaocai_get.finish(msg, at_sender=True)
+            await send_img_msg(bot, event, msg)
 
 @my_mix_elixir_info.handle()
 async def _(bot: Bot, event: MessageEvent):
     await data_check_conf(bot, event)
     isUser, user_info, msg = check_user(event)
     if not isUser:
-        if XiuConfig().img:
-            pic = await get_msg_pic(msg)
-            await my_mix_elixir_info.finish(MessageSegment.image(pic), at_sender=True)
-        else:
-            await my_mix_elixir_info.finish(msg, at_sender=True)
+        await send_img_msg(bot, event, msg)
     user_id = user_info.user_id
     mix_elixir_info = get_player_info(user_id, 'mix_elixir_info')
     l_msg = []
@@ -264,11 +200,7 @@ async def _(bot: Bot, event: MessageEvent):
         await my_mix_elixir_info.finish()
     elif isinstance(event, GuildMessageEvent):
         msg = ' '.join(l_msg)
-        if XiuConfig().img:
-            pic = await get_msg_pic(msg)
-            await my_mix_elixir_info.finish(MessageSegment.image(pic), at_sender=True)
-        else:
-            await my_mix_elixir_info.finish(msg, at_sender=True)
+        await send_img_msg(bot, event, msg)
 
 @elixir_help.handle()
 async def _(bot: Bot, event: MessageEvent):
@@ -290,20 +222,12 @@ async def _mix_elixir(bot: Bot, event: MessageEvent):
     await data_check_conf(bot, event)
     isUser, user_info, msg = check_user(event)
     if not isUser:
-        if XiuConfig().img:
-            pic = await get_msg_pic(msg)
-            await mix_elixir.finish(MessageSegment.image(pic), at_sender=True)
-        else:
-            await mix_elixir.finish(msg, at_sender=True)
+        await send_img_msg(bot, event, msg)
     user_id = user_info.user_id
     user_back = sql_message.get_back_msg(user_id)
     if user_back == None:
         msg = "道友的背包空空如也，无法炼丹"
-        if XiuConfig().img:
-            pic = await get_msg_pic(msg)
-            await mix_elixir.finish(MessageSegment.image(pic), at_sender=True)
-        else:
-            await mix_elixir.finish(msg, at_sender=True)
+        await send_img_msg(bot, event, msg)
     yaocai_dict = {}
     for back in user_back:
         if back.goods_type == "药材":
@@ -321,35 +245,19 @@ async def _mix_elixir(bot: Bot, event: MessageEvent):
             continue
     if yaocai_dict == {}:
         msg = f"道友的背包内没有药材，无法炼丹！"
-        if XiuConfig().img:
-            pic = await get_msg_pic(msg)
-            await mix_elixir.finish(MessageSegment.image(pic), at_sender=True)
-        else:
-            await mix_elixir.finish(msg, at_sender=True)
+        await send_img_msg(bot, event, msg)
     try:
         user_ldl_flag[user_id]
     except KeyError:
         msg = f"道友背包内没有炼丹炉，无法炼丹！"
-        if XiuConfig().img:
-            pic = await get_msg_pic(msg)
-            await mix_elixir.finish(MessageSegment.image(pic), at_sender=True)
-        else:
-            await mix_elixir.finish(msg, at_sender=True)
+        await send_img_msg(bot, event, msg)
     msg = "正在匹配背包中的丹方，请等待"
-    if XiuConfig().img:
-        pic = await get_msg_pic(msg)
-        await mix_elixir.send(MessageSegment.image(pic), at_sender=True)
-    else:
-        await mix_elixir.send(msg, at_sender=True)
+    await send_img_msg(bot, event, msg)
     yaocai_dict = await make_dict(yaocai_dict)
     finall_mix_elixir_msg = await get_mix_elixir_msg(yaocai_dict)
     if finall_mix_elixir_msg == {}:
         msg = "系统未检测到丹方，道友背包内的药材不满足！"
-        if XiuConfig().img:
-            pic = await get_msg_pic(msg)
-            await mix_elixir.finish(MessageSegment.image(pic), at_sender=True)
-        else:
-            await mix_elixir.finish(msg, at_sender=True)
+        await send_img_msg(bot, event, msg)
     else:
         ldl_name = sorted(user_ldl_dict[user_id].items(), key= lambda x:x[0], reverse=False)[0][1]
         l_msg = []
@@ -370,108 +278,64 @@ async def _mix_elixir(bot: Bot, event: MessageEvent):
             await send_forward_msg(bot, event, '配方', bot.self_id, l_msg)
         elif isinstance(event, GuildMessageEvent):
             msg = ' '.join(l_msg)
-            if XiuConfig().img:
-                pic = await get_msg_pic(msg)
-                await mix_elixir.finish(MessageSegment.image(pic), at_sender=True)
-            else:
-                await mix_elixir.finish(msg, at_sender=True)
+            await send_img_msg(bot, event, msg)
         msg = f"请道友输入配方公式 或者 取消，若想自己合成，请参考炼丹配方帮助"
-        if XiuConfig().img:
-            pic = await get_msg_pic(msg)
-            await mix_elixir.pause(prompt=MessageSegment.image(pic), at_sender=True)
-        else:
-            await mix_elixir.pause(prompt=msg, at_sender=True)
+        await send_img_msg(bot, event, msg)
 
 @mix_elixir.handle()
 async def _mix_elixir(bot: Bot, event: MessageEvent, mode : str = EventPlainText()):
     await data_check_conf(bot, event)
     if mode == "取消":
         msg = "本次炼丹已取消！"
-        if XiuConfig().img:
-            pic = await get_msg_pic(msg)
-            await mix_elixir.finish(MessageSegment.image(pic), at_sender=True)
-        else:
-            await mix_elixir.finish(msg, at_sender=True)
+        await send_img_msg(bot, event, msg)
     isUser, user_info, msg = check_user(event)
     user_id = user_info.user_id
     pattern = r"主药([\u4e00-\u9fa5]+)(\d+)药引([\u4e00-\u9fa5]+)(\d+)辅药([\u4e00-\u9fa5]+)(\d+)丹炉([\u4e00-\u9fa5]+)+"
     matched = re.search(pattern, mode)
     if matched == None:
         msg = f"请参考转发内容里的配方输入正确的配方！"
-        if XiuConfig().img:
-            pic = await get_msg_pic(msg)
-            await mix_elixir.reject(prompt=MessageSegment.image(pic), at_sender=True)
-        else:
-            await mix_elixir.reject(prompt=msg, at_sender=True)
+        await send_img_msg(bot, event, msg)
     else:
         zhuyao_name = matched.groups()[0]
         zhuyao_num = int(matched.groups()[1])#数量一定会有
         check, zhuyao_goods_id = await check_yaocai_name_in_back(user_id, zhuyao_name, zhuyao_num)
         if not check:
             msg = f"请检查药材：{zhuyao_name} 是否在背包中，或者数量是否足够！"
-            if XiuConfig().img:
-                pic = await get_msg_pic(msg)
-                await mix_elixir.reject(prompt=MessageSegment.image(pic), at_sender=True)
-            else:
-                await mix_elixir.reject(prompt=msg, at_sender=True)
+            await send_img_msg(bot, event, msg)
         yaoyin_name = matched.groups()[2]
         yaoyin_num = int(matched.groups()[3])#数量一定会有
         check, yaoyin_goods_id = await check_yaocai_name_in_back(user_id, yaoyin_name, yaoyin_num)
         if not check:
             msg = f"请检查药材：{yaoyin_name} 是否在背包中，或者数量是否足够！"
-            if XiuConfig().img:
-                pic = await get_msg_pic(msg)
-                await mix_elixir.reject(prompt=MessageSegment.image(pic), at_sender=True)
-            else:
-                await mix_elixir.reject(prompt=msg, at_sender=True)
+            await send_img_msg(bot, event, msg)
         fuyao_name = matched.groups()[4]
         fuyao_num = int(matched.groups()[5])
         check, fuyao_goods_id = await check_yaocai_name_in_back(user_id, fuyao_name, fuyao_num)
         if not check:
             msg = f"请检查药材：{fuyao_name} 是否在背包中，或者数量是否足够！"
-            if XiuConfig().img:
-                pic = await get_msg_pic(msg)
-                await mix_elixir.reject(prompt=MessageSegment.image(pic), at_sender=True)
-            else:
-                await mix_elixir.reject(prompt=msg, at_sender=True)
+            await send_img_msg(bot, event, msg)
         if zhuyao_name == fuyao_name:
             check, fuyao_goods_id = await check_yaocai_name_in_back(user_id, fuyao_name, fuyao_num + zhuyao_num)
             if not check:
                 msg = f"请检查药材：{zhuyao_name} 是否在背包中，或者数量是否足够！"
-                if XiuConfig().img:
-                    pic = await get_msg_pic(msg)
-                    await mix_elixir.reject(prompt=MessageSegment.image(pic), at_sender=True)
-                else:
-                    await mix_elixir.reject(prompt=msg, at_sender=True)
+                await send_img_msg(bot, event, msg)
         if yaoyin_name == fuyao_name:
             check, fuyao_goods_id = await check_yaocai_name_in_back(user_id, fuyao_name, fuyao_num + yaoyin_num)
             if not check:
                 msg = f"请检查药材：{yaoyin_name} 是否在背包中，或者数量是否足够！"
-                if XiuConfig().img:
-                    pic = await get_msg_pic(msg)
-                    await mix_elixir.reject(prompt=MessageSegment.image(pic), at_sender=True)
-                else:
-                    await mix_elixir.reject(prompt=msg, at_sender=True)
+                await send_img_msg(bot, event, msg)
                 
         ldl_name = matched.groups()[6]
         check, ldl_info = await check_ldl_name_in_back(user_id, ldl_name)
         if not check:
             msg = f"请检查炼丹炉：{ldl_name} 是否在背包中！"
-            if XiuConfig().img:
-                pic = await get_msg_pic(msg)
-                await mix_elixir.reject(prompt=MessageSegment.image(pic), at_sender=True)
-            else:
-                await mix_elixir.reject(prompt=msg, at_sender=True)
+            await send_img_msg(bot, event, msg)
         #检测通过
         zhuyao_info = Items().get_data_by_item_id(zhuyao_goods_id)
         yaoyin_info = Items().get_data_by_item_id(yaoyin_goods_id)
         if await tiaohe(zhuyao_info, zhuyao_num, yaoyin_info, yaoyin_num):#调和失败
             msg = f"冷热调和失败！小心炸炉哦~"
-            if XiuConfig().img:
-                pic = await get_msg_pic(msg)
-                await mix_elixir.finish(MessageSegment.image(pic), at_sender=True)
-            else:
-                await mix_elixir.finish(msg, at_sender=True)
+            await send_img_msg(bot, event, msg)
         else:
             elixir_config = {}
             elixir_config[str(zhuyao_info['主药']['type'])] = zhuyao_info['主药']['power'] * zhuyao_num
@@ -516,11 +380,7 @@ async def _mix_elixir(bot: Bot, event: MessageEvent, mode : str = EventPlainText
                     await mix_elixir.finish(msg, at_sender=True)
             else:
                 msg = f"没有炼成丹药哦~就不扣你药材啦"
-                if XiuConfig().img:
-                    pic = await get_msg_pic(msg)
-                    await mix_elixir.finish(MessageSegment.image(pic), at_sender=True)
-                else:
-                    await mix_elixir.finish(msg, at_sender=True)
+                await send_img_msg(bot, event, msg)
     
 async def check_yaocai_name_in_back(user_id, yaocai_name, yaocai_num):
     flag = False

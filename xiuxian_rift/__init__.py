@@ -20,7 +20,7 @@ from nonebot_plugin_guild_patch import (
 from nonebot.permission import SUPERUSER
 from nonebot.log import logger
 from ..xiuxian2_handle import XiuxianDateManage
-from ..utils import data_check_conf, check_user, send_forward_msg, check_user_type, send_forward_msg_list, get_msg_pic
+from ..utils import data_check_conf, check_user, send_forward_msg, check_user_type, send_forward_msg_list, get_msg_pic, send_img_msg
 from .riftconfig import get_config, savef
 from .jsondata import save_rift_data, read_rift_data
 from .riftmake import Rift, get_rift_type, get_story_type, NONEMSG, get_battle_type, get_dxsj_info, get_boss_battle_info, get_treasure_info
@@ -277,8 +277,7 @@ async def _():
 async def _(bot: Bot, event: MessageEvent):
     await data_check_conf(bot, event)
     msg = __rift_help__
-    pic = await get_msg_pic(msg)#
-    await rift_help.finish(MessageSegment.image(pic), at_sender=True)
+    await send_img_msg(bot, event, msg)
 
 #生成秘境
 @create_rift.handle()
@@ -287,20 +286,12 @@ async def _(bot: Bot, event: MessageEvent, args: Message = CommandArg()):
     user_id, group_id, mess = await data_check(bot, event)
     if group_id not in groups:
         msg = '本群尚未开启秘境，请联系管理员开启群秘境'
-        if XiuConfig().img:
-            pic = await get_msg_pic(msg)
-            await create_rift.finish(MessageSegment.image(pic), at_sender=True)
-        else:
-            await create_rift.finish(msg, at_sender=True)
+        await send_img_msg(bot, event, msg)
     
     try:
         group_rift[group_id]
         msg = f"当前已存在{group_rift[group_id].name}，秘境可探索次数：{group_rift[group_id].count}次，请诸位道友发送 探索秘境 来加入吧！"
-        if XiuConfig().img:
-            pic = await get_msg_pic(msg)
-            await create_rift.finish(MessageSegment.image(pic), at_sender=True)
-        else:
-            await create_rift.finish(msg, at_sender=True)
+        await send_img_msg(bot, event, msg)
     except KeyError:
         rift = Rift()
         rift.name = get_rift_type()
@@ -309,11 +300,7 @@ async def _(bot: Bot, event: MessageEvent, args: Message = CommandArg()):
         rift.time = config['rift'][rift.name]['time']
         group_rift[group_id] = rift
         msg = f"野生的{rift.name}出现了！秘境可探索次数：{rift.count}次，请诸位道友发送 探索秘境 来加入吧！"
-        if XiuConfig().img:
-            pic = await get_msg_pic(msg)
-            await create_rift.finish(MessageSegment.image(pic), at_sender=True)
-        else:
-            await create_rift.finish(msg, at_sender=True)
+        await send_img_msg(bot, event, msg)
 
 
 #探索秘境
@@ -323,45 +310,25 @@ async def _(bot: Bot, event: MessageEvent, args: Message = CommandArg()):
 
     isUser, user_info, msg = check_user(event)
     if not isUser:
-        if XiuConfig().img:
-            pic = await get_msg_pic(msg)
-            await explore_rift.finish(MessageSegment.image(pic), at_sender=True)
-        else:
-            await explore_rift.finish(msg, at_sender=True)
+        await send_img_msg(bot, event, msg)
     
     user_id, group_id, mess = await data_check(bot, event)
     is_type, msg = check_user_type(user_id, 0)#需要无状态的用户
     if not is_type:
-        if XiuConfig().img:
-            pic = await get_msg_pic(msg)
-            await explore_rift.finish(MessageSegment.image(pic), at_sender=True)
-        else:
-            await explore_rift.finish(msg, at_sender=True)
+        await send_img_msg(bot, event, msg)
     else:
         user_id, group_id, mess = await data_check(bot, event)
         if group_id not in groups:
             msg = '本群尚未开启秘境，请联系管理员开启群秘境'
-            if XiuConfig().img:
-                pic = await get_msg_pic(msg)
-                await explore_rift.finish(MessageSegment.image(pic), at_sender=True)
-            else:
-                await explore_rift.finish(msg, at_sender=True)
+            await send_img_msg(bot, event, msg)
         try:
             group_rift[group_id]
         except:
             msg = '野外秘境尚未生成，请道友耐心等待!'
-            if XiuConfig().img:
-                pic = await get_msg_pic(msg)
-                await explore_rift.finish(MessageSegment.image(pic), at_sender=True)
-            else:
-                await explore_rift.finish(msg, at_sender=True)
+            await send_img_msg(bot, event, msg)
         if user_id in group_rift[group_id].l_user_id:
             msg = '道友已经参加过本次秘境啦，请把机会留给更多的道友！'
-            if XiuConfig().img:
-                pic = await get_msg_pic(msg)
-                await explore_rift.finish(MessageSegment.image(pic), at_sender=True)
-            else:
-                await explore_rift.finish(msg, at_sender=True)
+            await send_img_msg(bot, event, msg)
         
         group_rift[group_id].l_user_id.append(user_id)
         group_rift[group_id].count -= 1
@@ -377,16 +344,8 @@ async def _(bot: Bot, event: MessageEvent, args: Message = CommandArg()):
             del group_rift[group_id]
             logger.info('群{group_id}秘境已到上限次数！')
             msg += "秘境随着道友的进入，已无法再维持更多的人，而关闭了！"
-            if XiuConfig().img:
-                pic = await get_msg_pic(msg)
-                await explore_rift.finish(MessageSegment.image(pic), at_sender=True)
-            else:
-                await explore_rift.finish(msg, at_sender=True)
-        if XiuConfig().img:
-            pic = await get_msg_pic(msg)
-            await explore_rift.finish(MessageSegment.image(pic), at_sender=True)
-        else:
-            await explore_rift.finish(msg, at_sender=True)
+            await send_img_msg(bot, event, msg)
+        await send_img_msg(bot, event, msg)
     
         
 #结算秘境
@@ -396,40 +355,24 @@ async def _(bot: Bot, event: MessageEvent, args: Message = CommandArg()):
 
     isUser, user_info, msg = check_user(event)
     if not isUser:
-        if XiuConfig().img:
-            pic = await get_msg_pic(msg)
-            await complete_rift.finish(MessageSegment.image(pic), at_sender=True)
-        else:
-            await complete_rift.finish(msg, at_sender=True)
+        await send_img_msg(bot, event, msg)
     user_id = user_info.user_id
 
     user_id, group_id, mess = await data_check(bot, event)
     if group_id not in groups:
         msg = '本群尚未开启秘境，请联系管理员开启群秘境'
-        if XiuConfig().img:
-            pic = await get_msg_pic(msg)
-            await complete_rift.finish(MessageSegment.image(pic), at_sender=True)
-        else:
-            await complete_rift.finish(msg, at_sender=True)
+        await send_img_msg(bot, event, msg)
     
     is_type, msg = check_user_type(user_id, 3)#需要在秘境的用户
     if not is_type:
-        if XiuConfig().img:
-            pic = await get_msg_pic(msg)
-            await complete_rift.finish(MessageSegment.image(pic), at_sender=True)
-        else:
-            await complete_rift.finish(msg, at_sender=True)
+        await send_img_msg(bot, event, msg)
     else:
         try:
             rift_info = read_rift_data(user_id)
         except:
             msg = '发生未知错误！'
             sql_message.do_work(user_id, 0)
-            if XiuConfig().img:
-                pic = await get_msg_pic(msg)
-                await complete_rift.finish(MessageSegment.image(pic), at_sender=True)
-            else:
-                await complete_rift.finish(msg, at_sender=True)
+            await send_img_msg(bot, event, msg)
             
         user_cd_message = sql_message.get_user_cd(user_id)
         work_time = datetime.strptime(
@@ -439,49 +382,29 @@ async def _(bot: Bot, event: MessageEvent, args: Message = CommandArg()):
         time2 = rift_info["time"]
         if exp_time < time2:
             msg = f"进行中的：{rift_info['name']}探索，预计{time2 - exp_time}分钟后可结束"
-            if XiuConfig().img:
-                pic = await get_msg_pic(msg)
-                await complete_rift.finish(MessageSegment.image(pic), at_sender=True)
-            else:
-                await complete_rift.finish(msg, at_sender=True)
+            await send_img_msg(bot, event, msg)
         else:#秘境结算逻辑
             sql_message.do_work(user_id, 0)
             rift_rank = rift_info["rank"] #秘境等级
             rift_type = get_story_type() #无事、宝物、战斗
             if rift_type == "无事":
                 msg = random.choice(NONEMSG)
-                if XiuConfig().img:
-                    pic = await get_msg_pic(msg)
-                    await complete_rift.finish(MessageSegment.image(pic), at_sender=True)
-                else:
-                    await complete_rift.finish(msg, at_sender=True)
+                await send_img_msg(bot, event, msg)
             elif rift_type == "战斗":
                 rift_type = get_battle_type()
                 if rift_type == "掉血事件":
                     msg = get_dxsj_info("掉血事件", user_info)
-                    if XiuConfig().img:
-                        pic = await get_msg_pic(msg)
-                        await complete_rift.finish(MessageSegment.image(pic), at_sender=True)
-                    else:
-                        await complete_rift.finish(msg, at_sender=True)
+                    await send_img_msg(bot, event, msg)
                 elif rift_type == "Boss战斗":
                     result, msg = await get_boss_battle_info(user_info, rift_rank, bot.self_id)
                     if isinstance(event, GroupMessageEvent):
                         await send_forward_msg_list(bot, event, result)
                     elif isinstance(event, GuildMessageEvent):
                         pass
-                    if XiuConfig().img:
-                        pic = await get_msg_pic(msg)
-                        await complete_rift.finish(MessageSegment.image(pic), at_sender=True)
-                    else:
-                        await complete_rift.finish(msg, at_sender=True)
+                    await send_img_msg(bot, event, msg)
             elif rift_type == "宝物":
                 msg = get_treasure_info(user_info, rift_rank)
-                if XiuConfig().img:
-                    pic = await get_msg_pic(msg)
-                    await complete_rift.finish(MessageSegment.image(pic), at_sender=True)
-                else:
-                    await complete_rift.finish(msg, at_sender=True)
+                await send_img_msg(bot, event, msg)
 
 #终止探索秘境
 @break_rift.handle()
@@ -489,28 +412,16 @@ async def _(bot: Bot, event: MessageEvent, args: Message = CommandArg()):
     await data_check_conf(bot, event)
     isUser, user_info, msg = check_user(event)
     if not isUser:
-        if XiuConfig().img:
-            pic = await get_msg_pic(msg)
-            await break_rift.finish(MessageSegment.image(pic), at_sender=True)
-        else:
-            await break_rift.finish(msg, at_sender=True)
+        await send_img_msg(bot, event, msg)
 
     user_id, group_id, mess = await data_check(bot, event)
     if group_id not in groups:
         msg = '本群尚未开启秘境，请联系管理员开启群秘境'
-        if XiuConfig().img:
-            pic = await get_msg_pic(msg)
-            await break_rift.finish(MessageSegment.image(pic), at_sender=True)
-        else:
-            await break_rift.finish(msg, at_sender=True)
+        await send_img_msg(bot, event, msg)
     
     is_type, msg = check_user_type(user_id, 3)#需要在秘境的用户
     if not is_type:
-        if XiuConfig().img:
-            pic = await get_msg_pic(msg)
-            await break_rift.finish(MessageSegment.image(pic), at_sender=True)
-        else:
-            await break_rift.finish(msg, at_sender=True)
+        await send_img_msg(bot, event, msg)
     else:
         user_id = user_info.user_id
         try:
@@ -518,19 +429,11 @@ async def _(bot: Bot, event: MessageEvent, args: Message = CommandArg()):
         except:
             msg = '发生未知错误！'
             sql_message.do_work(user_id, 0)
-            if XiuConfig().img:
-                pic = await get_msg_pic(msg)
-                await break_rift.finish(MessageSegment.image(pic), at_sender=True)
-            else:
-                await break_rift.finish(msg, at_sender=True)
+            await send_img_msg(bot, event, msg)
         
         sql_message.do_work(user_id, 0)
         msg = f"已终止{rift_info['name']}秘境的探索！"
-        if XiuConfig().img:
-            pic = await get_msg_pic(msg)
-            await break_rift.finish(MessageSegment.image(pic), at_sender=True)
-        else:
-            await break_rift.finish(msg, at_sender=True)
+        await send_img_msg(bot, event, msg)
 
 @set_group_rift.handle()
 async def _(bot: Bot, event: MessageEvent, args: Message = CommandArg()):
@@ -542,45 +445,25 @@ async def _(bot: Bot, event: MessageEvent, args: Message = CommandArg()):
     if mode == '开启':
         if is_in_group:
             msg = f'本群已开启群秘境，请勿重复开启!'
-            if XiuConfig().img:
-                pic = await get_msg_pic(msg)
-                await set_group_rift.finish(MessageSegment.image(pic), at_sender=True)
-            else:
-                await set_group_rift.finish(msg, at_sender=True)
+            await send_img_msg(bot, event, msg)
         else:
             config['open'].append(group_id)
             savef(config)
             msg = f'已开启本群秘境!'
-            if XiuConfig().img:
-                pic = await get_msg_pic(msg)
-                await set_group_rift.finish(MessageSegment.image(pic), at_sender=True)
-            else:
-                await set_group_rift.finish(msg, at_sender=True)
+            await send_img_msg(bot, event, msg)
 
     elif mode == '关闭':
         if is_in_group:
             config['open'].remove(group_id)
             savef(config)
             msg = f'已关闭本群秘境!'
-            if XiuConfig().img:
-                pic = await get_msg_pic(msg)
-                await set_group_rift.finish(MessageSegment.image(pic), at_sender=True)
-            else:
-                await set_group_rift.finish(msg, at_sender=True)
+            await send_img_msg(bot, event, msg)
         else:
             msg = f'本群未开启群秘境!'
-            if XiuConfig().img:
-                pic = await get_msg_pic(msg)
-                await set_group_rift.finish(MessageSegment.image(pic), at_sender=True)
-            else:
-                await set_group_rift.finish(msg, at_sender=True)
+            await send_img_msg(bot, event, msg)
     
     else:
-        if XiuConfig().img:
-            pic = await get_msg_pic(__rift_help__)
-            await set_group_rift.finish(MessageSegment.image(pic), at_sender=True)
-        else:
-            await set_group_rift.finish(__rift_help__, at_sender=True)
+        await send_img_msg(bot, event, msg=__rift_help__)
         
 def is_in_groups(event: MessageEvent):
     if isinstance(event, GroupMessageEvent):

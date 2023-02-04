@@ -21,7 +21,7 @@ from nonebot_plugin_guild_patch import (
     GuildMessageEvent
 )
 
-from ..utils import data_check_conf, get_msg_pic, check_user
+from ..utils import data_check_conf, get_msg_pic, check_user, send_img_msg
 from ..command import choujiang
 from ..item_json import Items
 from ..xiuxian_config import XiuConfig
@@ -51,11 +51,7 @@ async def _(bot: Bot, event: MessageEvent, args: Message = CommandArg()):
         return
     isUser, user_info, msg = check_user(event)
     if not isUser:
-        if XiuConfig().img:
-            pic = await get_msg_pic(f"@{event.sender.nickname}" + msg)
-            await choujiang.finish(MessageSegment.image(pic), at_sender=True)
-        else:
-            await choujiang.finish(f"@{event.sender.nickname}" + msg, at_sender=True)
+        await send_img_msg(bot, event, msg)
     user_id = user_info.user_id
     arg = args.extract_plain_text().strip()
     ls_faqi = 16000
@@ -75,20 +71,12 @@ async def _(bot: Bot, event: MessageEvent, args: Message = CommandArg()):
 
     if arg == "帮助":
         msg = "※---------修仙祈愿---------※\n法器：\n1w6000枚灵石1连\n16w枚灵石10连\n\n防具：\n11w枚灵石1连\n100w枚灵石10连\n\n神通：\n12w枚灵石1连\n110w枚灵石10连\n\n功法：\n12w枚灵石1连\n110枚w灵石10连\n\n丹药：\n30w枚灵石1连\n280w枚灵石10连\n\n合成丹药：\n50w枚灵石1连\n470w枚灵石10连\n\n药材：\n15w枚灵石1连\n140w枚灵石10连\n"
-        if XiuConfig().img:
-            pic = await get_msg_pic(f"@{event.sender.nickname}\n" + msg)
-            await choujiang.finish(MessageSegment.image(pic), at_sender=True)
-        else:
-            await choujiang.finish(f"@{event.sender.nickname}\n" + msg, at_sender=True)
+        await send_img_msg(bot, event, msg)
 
     elif arg == "法器1连":
         if user_info.stone < ls_faqi:
             msg = "对不起，{}道友所持有的灵石不足以进行{}祈愿，请准备好充足的{}枚灵石再来祈愿，谢谢！".format(user_info.user_name, arg, ls_faqi)
-            if XiuConfig().img:
-                pic = await get_msg_pic(f"@{event.sender.nickname}\n" + msg)
-                await choujiang.finish(MessageSegment.image(pic), at_sender=True)
-            else:
-                await choujiang.finish(f"@{event.sender.nickname}\n" + msg, at_sender=True)
+            await send_img_msg(bot, event, msg)
 
         faqi_data = items.get_data_by_item_type(['法器'])
         random_faqi_id = get_random_id(faqi_data)
@@ -96,20 +84,12 @@ async def _(bot: Bot, event: MessageEvent, args: Message = CommandArg()):
         sql_message.update_ls(user_id, ls_faqi, 2)
         sql_message.send_back(user_id,random_faqi_id,random_faqi_info['name'],random_faqi_info['type'], 1, 0 )
         msg = "恭喜{}道友消耗{}枚灵石祈愿获得{}：{}！！！欢迎下次再来！！！".format(user_info.user_name, ls_faqi, random_faqi_info['level'], random_faqi_info['name'])
-        if XiuConfig().img:
-            pic = await get_msg_pic(f"@{event.sender.nickname}\n" + msg)
-            await choujiang.finish(MessageSegment.image(pic), at_sender=True)
-        else:
-            await choujiang.finish(f"@{event.sender.nickname}\n" + msg, at_sender=True)
+        await send_img_msg(bot, event, msg)
 
     elif arg == "法器10连":
         if user_info.stone < ls_faqi_10:
             msg = "对不起，{}道友所持有的灵石不足以进行{}祈愿，请准备好充足的{}枚灵石再来祈愿，谢谢！".format(user_info.user_name, arg, ls_faqi_10)
-            if XiuConfig().img:
-                pic = await get_msg_pic(f"@{event.sender.nickname}\n" + msg)
-                await choujiang.finish(MessageSegment.image(pic), at_sender=True)
-            else:
-                await choujiang.finish(f"@{event.sender.nickname}\n" + msg, at_sender=True)
+            await send_img_msg(bot, event, msg)
         for x in range(10):
             faqi_data = items.get_data_by_item_type(['法器'])
             random_faqi_id = get_random_id(faqi_data)
@@ -118,40 +98,24 @@ async def _(bot: Bot, event: MessageEvent, args: Message = CommandArg()):
             msg += "{}：{}\n".format(random_faqi_info['level'], random_faqi_info['name'])
         sql_message.update_ls(user_id, ls_faqi_10, 2)
         msg = "恭喜{}道友消耗{}枚灵石祈愿获得\n".format(user_info.user_name, ls_faqi_10) + msg + "！！！欢迎下次再来！！！"
-        if XiuConfig().img:
-            pic = await get_msg_pic(f"@{event.sender.nickname}\n" + msg)
-            await choujiang.finish(MessageSegment.image(pic), at_sender=True)
-        else:
-            await choujiang.finish(f"@{event.sender.nickname}\n" + msg, at_sender=True)
+        await send_img_msg(bot, event, msg)
 
     elif arg == "防具1连":
         if user_info.stone < ls_fangju:
             msg = "对不起，{}道友所持有的灵石不足以进行{}祈愿，请准备好充足的{}枚灵石再来祈愿，谢谢！".format(user_info.user_name, arg, ls_fangju)
-            if XiuConfig().img:
-                pic = await get_msg_pic(f"@{event.sender.nickname}\n" + msg)
-                await choujiang.finish(MessageSegment.image(pic), at_sender=True)
-            else:
-                await choujiang.finish(f"@{event.sender.nickname}\n" + msg, at_sender=True)
+            await send_img_msg(bot, event, msg)
         fangju_data = items.get_data_by_item_type(['防具'])
         random_fangju_id = get_random_id(fangju_data)
         random_fangju_info = items.get_data_by_item_id(random_fangju_id)
         sql_message.update_ls(user_id, ls_fangju, 2)
         sql_message.send_back(user_id, random_fangju_id, random_fangju_info['name'], random_fangju_info['type'], 1, 0)
         msg = "恭喜{}道友消耗{}枚灵石祈愿获得{}：{}！！！欢迎下次再来！！！".format(user_info.user_name, ls_fangju, random_fangju_info['level'], random_fangju_info['name'])
-        if XiuConfig().img:
-            pic = await get_msg_pic(f"@{event.sender.nickname}\n" + msg)
-            await choujiang.finish(MessageSegment.image(pic))
-        else:
-            await choujiang.finish(f"@{event.sender.nickname}\n" + msg)
+        await send_img_msg(bot, event, msg)
 
     elif arg == "防具10连":
         if user_info.stone < ls_fangju_10:
             msg = "对不起，{}道友所持有的灵石不足以进行{}祈愿，请准备好充足的{}枚灵石再来祈愿，谢谢！".format(user_info.user_name, arg, ls_fangju_10)
-            if XiuConfig().img:
-                pic = await get_msg_pic(f"@{event.sender.nickname}\n" + msg)
-                await choujiang.finish(MessageSegment.image(pic), at_sender=True)
-            else:
-                await choujiang.finish(f"@{event.sender.nickname}\n" + msg, at_sender=True)
+            await send_img_msg(bot, event, msg)
         for x in range(10):
             fangju_data = items.get_data_by_item_type(['防具'])
             random_fangju_id = get_random_id(fangju_data)
@@ -160,40 +124,24 @@ async def _(bot: Bot, event: MessageEvent, args: Message = CommandArg()):
             msg += "{}：{}\n".format(random_fangju_info['level'], random_fangju_info['name'])
         sql_message.update_ls(user_id, ls_fangju_10, 2)
         msg = "恭喜{}道友消耗{}枚灵石祈愿获得\n".format(user_info.user_name, ls_fangju_10) + msg + "！！！欢迎下次再来！！！"
-        if XiuConfig().img:
-            pic = await get_msg_pic(f"@{event.sender.nickname}\n" + msg)
-            await choujiang.finish(MessageSegment.image(pic), at_sender=True)
-        else:
-            await choujiang.finish(f"@{event.sender.nickname}\n" + msg, at_sender=True)
+        await send_img_msg(bot, event, msg)
 
     elif arg == "神通1连":
         if user_info.stone < ls_st:
             msg = "对不起，{}道友所持有的灵石不足以进行{}祈愿，请准备好充足的{}枚灵石再来祈愿，谢谢！".format(user_info.user_name, arg, ls_st)
-            if XiuConfig().img:
-                pic = await get_msg_pic(f"@{event.sender.nickname}\n" + msg)
-                await choujiang.finish(MessageSegment.image(pic), at_sender=True)
-            else:
-                await choujiang.finish(f"@{event.sender.nickname}\n" + msg, at_sender=True)
+            await send_img_msg(bot, event, msg)
         shentong_data = items.get_data_by_item_type(['神通'])
         random_shentong_id = get_random_id(shentong_data)
         random_shentong_info = items.get_data_by_item_id(random_shentong_id)
         sql_message.send_back(user_id, random_shentong_id, random_shentong_info['name'], random_shentong_info['type'], 1, 0)
         sql_message.update_ls(user_id, ls_st, 2)
         msg = "恭喜{}道友消耗{}枚灵石祈愿获得{}：{}！！！欢迎下次再来！！！".format(user_info.user_name, ls_st, random_shentong_info['level'], random_shentong_info['name'])
-        if XiuConfig().img:
-            pic = await get_msg_pic(f"@{event.sender.nickname}\n" + msg)
-            await choujiang.finish(MessageSegment.image(pic), at_sender=True)
-        else:
-            await choujiang.finish(f"@{event.sender.nickname}\n" + msg, at_sender=True)
+        await send_img_msg(bot, event, msg)
     
     elif arg == "神通10连":
         if user_info.stone < ls_st_10:
             msg = "对不起，{}道友所持有的灵石不足以进行{}祈愿，请准备好充足的{}枚灵石再来祈愿，谢谢！".format(user_info.user_name, arg, ls_st_10)
-            if XiuConfig().img:
-                pic = await get_msg_pic(f"@{event.sender.nickname}\n" + msg)
-                await choujiang.finish(MessageSegment.image(pic), at_sender=True)
-            else:
-                await choujiang.finish(f"@{event.sender.nickname}\n" + msg, at_sender=True)
+            await send_img_msg(bot, event, msg)
         for x in range(10):
             shentong_data = items.get_data_by_item_type(['神通'])
             random_shentong_id = get_random_id(shentong_data)
@@ -202,40 +150,24 @@ async def _(bot: Bot, event: MessageEvent, args: Message = CommandArg()):
             msg += "{}：{}\n".format(random_shentong_info['level'], random_shentong_info['name'])
         sql_message.update_ls(user_id, ls_st_10, 2)
         msg = "恭喜{}道友消耗{}枚灵石祈愿获得\n".format(user_info.user_name, ls_st_10) + msg + "！！！欢迎下次再来！！！"
-        if XiuConfig().img:
-            pic = await get_msg_pic(f"@{event.sender.nickname}\n" + msg)
-            await choujiang.finish(MessageSegment.image(pic), at_sender=True)
-        else:
-            await choujiang.finish(f"@{event.sender.nickname}\n" + msg, at_sender=True) 
+        await send_img_msg(bot, event, msg)
     
     elif arg == "功法1连":
         if user_info.stone < ls_gf:
             msg = "对不起，{}道友所持有的灵石不足以进行{}祈愿，请准备好充足的{}枚灵石再来祈愿，谢谢！".format(user_info.user_name, arg, ls_gf)
-            if XiuConfig().img:
-                pic = await get_msg_pic(f"@{event.sender.nickname}\n" + msg)
-                await choujiang.finish(MessageSegment.image(pic), at_sender=True)
-            else:
-                await choujiang.finish(f"@{event.sender.nickname}\n" + msg, at_sender=True)
+            await send_img_msg(bot, event, msg)
         gongfa_data = items.get_data_by_item_type(['功法'])
         random_gongfa_id = get_random_id(gongfa_data)
         random_gongfa_info = items.get_data_by_item_id(random_gongfa_id)
         sql_message.send_back(user_id, random_gongfa_id, random_gongfa_info['name'], random_gongfa_info['type'], 1, 0)
         sql_message.update_ls(user_id, ls_gf, 2)
         msg = "恭喜{}道友消耗{}枚灵石祈愿获得{}：{}！！！欢迎下次再来！！！".format(user_info.user_name, ls_gf, random_gongfa_info['level'], random_gongfa_info['name'])
-        if XiuConfig().img:
-            pic = await get_msg_pic(f"@{event.sender.nickname}\n" + msg)
-            await choujiang.finish(MessageSegment.image(pic), at_sender=True)
-        else:
-            await choujiang.finish(f"@{event.sender.nickname}\n" + msg, at_sender=True)
+        await send_img_msg(bot, event, msg)
 
     elif arg == "功法10连":
         if user_info.stone < ls_gf_10:
             msg = "对不起，{}道友所持有的灵石不足以进行{}祈愿，请准备好充足的{}枚灵石再来祈愿，谢谢！".format(user_info.user_name, arg, ls_gf_10)
-            if XiuConfig().img:
-                pic = await get_msg_pic(f"@{event.sender.nickname}\n" + msg)
-                await choujiang.finish(MessageSegment.image(pic), at_sender=True)
-            else:
-                await choujiang.finish(f"@{event.sender.nickname}\n" + msg, at_sender=True)
+            await send_img_msg(bot, event, msg)
         for x in range(10):
             gongfa_data = items.get_data_by_item_type(['功法'])
             random_gongfa_id = get_random_id(gongfa_data)
@@ -244,40 +176,24 @@ async def _(bot: Bot, event: MessageEvent, args: Message = CommandArg()):
             msg += "{}：{}\n".format(random_gongfa_info['level'], random_gongfa_info['name'])
         sql_message.update_ls(user_id, ls_gf_10, 2)
         msg = "恭喜{}道友消耗{}枚灵石祈愿获得\n".format(user_info.user_name, ls_gf_10) + msg + "！！！欢迎下次再来！！！"
-        if XiuConfig().img:
-            pic = await get_msg_pic(f"@{event.sender.nickname}\n" + msg)
-            await choujiang.finish(MessageSegment.image(pic), at_sender=True)
-        else:
-            await choujiang.finish(f"@{event.sender.nickname}\n" + msg, at_sender=True)
+        await send_img_msg(bot, event, msg)
 
     elif arg == "丹药1连":
         if user_info.stone < ls_dy:
             msg = "对不起，{}道友所持有的灵石不足以进行{}祈愿，请准备好充足的{}枚灵石再来祈愿，谢谢！".format(user_info.user_name, arg, ls_dy)
-            if XiuConfig().img:
-                pic = await get_msg_pic(f"@{event.sender.nickname}\n" + msg)
-                await choujiang.finish(MessageSegment.image(pic), at_sender=True)
-            else:
-                await choujiang.finish(f"@{event.sender.nickname}\n" + msg, at_sender=True)
+            await send_img_msg(bot, event, msg)
         danyao_data = items.get_data_by_item_type(['丹药'])
         random_danyao_id = get_random_id(danyao_data)
         random_danyao_info = items.get_data_by_item_id(random_danyao_id)
         sql_message.send_back(user_id, random_danyao_id, random_danyao_info['name'], random_danyao_info['type'], 1, 0)
         sql_message.update_ls(user_id, ls_dy, 2)
         msg = "恭喜{}道友消耗{}枚灵石祈愿获得{}\n使用效果及等级需求：{}\n！！！欢迎下次再来！！！".format(user_info.user_name, ls_dy, random_danyao_info['name'], random_danyao_info['desc'])
-        if XiuConfig().img:
-            pic = await get_msg_pic(f"@{event.sender.nickname}\n" + msg)
-            await choujiang.finish(MessageSegment.image(pic), at_sender=True)
-        else:
-            await choujiang.finish(f"@{event.sender.nickname}\n" + msg, at_sender=True)
+        await send_img_msg(bot, event, msg)
 
     elif arg == "丹药10连":
         if user_info.stone < ls_dy_10:
             msg = "对不起，{}道友所持有的灵石不足以进行{}祈愿，请准备好充足的{}枚灵石再来祈愿，谢谢！".format(user_info.user_name, arg, ls_dy_10)
-            if XiuConfig().img:
-                pic = await get_msg_pic(f"@{event.sender.nickname}\n" + msg)
-                await choujiang.finish(MessageSegment.image(pic), at_sender=True)
-            else:
-                await choujiang.finish(f"@{event.sender.nickname}\n" + msg, at_sender=True)
+            await send_img_msg(bot, event, msg)
         for x in range(10):
             danyao_data = items.get_data_by_item_type(['丹药'])
             random_danyao_id = get_random_id(danyao_data)
@@ -286,40 +202,24 @@ async def _(bot: Bot, event: MessageEvent, args: Message = CommandArg()):
             msg += "{},使用效果及等级需求：{}\n".format(random_danyao_info['name'], random_danyao_info['desc'])
         sql_message.update_ls(user_id, ls_dy_10, 2)
         msg = "恭喜{}道友消耗{}枚灵石祈愿获得\n".format(user_info.user_name, ls_dy_10) + msg + "！！！欢迎下次再来！！！"
-        if XiuConfig().img:
-            pic = await get_msg_pic(f"@{event.sender.nickname}\n" + msg)
-            await choujiang.finish(MessageSegment.image(pic), at_sender=True)
-        else:
-            await choujiang.finish(f"@{event.sender.nickname}\n" + msg, at_sender=True)
+        await send_img_msg(bot, event, msg)
 
     elif arg == "合成丹药1连":
         if user_info.stone < ls_hcdy:
             msg = "对不起，{}道友所持有的灵石不足以进行{}祈愿，请准备好充足的{}枚灵石再来祈愿，谢谢！".format(user_info.user_name, arg, ls_hcdy)
-            if XiuConfig().img:
-                pic = await get_msg_pic(f"@{event.sender.nickname}\n" + msg)
-                await choujiang.finish(MessageSegment.image(pic), at_sender=True)
-            else:
-                await choujiang.finish(f"@{event.sender.nickname}\n" + msg, at_sender=True)
+            await send_img_msg(bot, event, msg)
         hechengdanyao_data = items.get_data_by_item_type(['合成丹药'])
         random_hechengdanyao_id = get_random_id(hechengdanyao_data)
         random_hechengdanyao_info = items.get_data_by_item_id(random_hechengdanyao_id)
         sql_message.send_back(user_id, random_hechengdanyao_id, random_hechengdanyao_info['name'], random_hechengdanyao_info['type'], 1, 0)
         sql_message.update_ls(user_id, ls_hcdy, 2)
         msg = "恭喜{}道友消耗{}枚灵石祈愿获得{}\n使用效果：{}，等级需求：{}\n！！！欢迎下次再来！！！".format(user_info.user_name, ls_dy, random_hechengdanyao_info['name'], random_hechengdanyao_info['desc'], random_hechengdanyao_info['境界'])
-        if XiuConfig().img:
-            pic = await get_msg_pic(f"@{event.sender.nickname}\n" + msg)
-            await choujiang.finish(MessageSegment.image(pic), at_sender=True)
-        else:
-            await choujiang.finish(f"@{event.sender.nickname}\n" + msg, at_sender=True)
+        await send_img_msg(bot, event, msg)
 
     elif arg == "合成丹药10连":
         if user_info.stone < ls_hcdy_10:
             msg = "对不起，{}道友所持有的灵石不足以进行{}祈愿，请准备好充足的{}枚灵石再来祈愿，谢谢！".format(user_info.user_name, arg, ls_hcdy_10)
-            if XiuConfig().img:
-                pic = await get_msg_pic(f"@{event.sender.nickname}\n" + msg)
-                await choujiang.finish(MessageSegment.image(pic), at_sender=True)
-            else:
-                await choujiang.finish(f"@{event.sender.nickname}\n" + msg, at_sender=True)
+            await send_img_msg(bot, event, msg)
         for x in range(10):
             hechengdanyao_data = items.get_data_by_item_type(['合成丹药'])
             random_hechengdanyao_id = get_random_id(hechengdanyao_data)
@@ -328,40 +228,24 @@ async def _(bot: Bot, event: MessageEvent, args: Message = CommandArg()):
             msg += "{},使用效果：{}，等级需求：{}\n".format(random_hechengdanyao_info['name'], random_hechengdanyao_info['desc'], random_hechengdanyao_info['境界'])
         sql_message.update_ls(user_id, ls_hcdy_10, 2)
         msg = "恭喜{}道友消耗{}枚灵石祈愿获得\n".format(user_info.user_name, ls_hcdy_10) + msg + "！！！欢迎下次再来！！！"
-        if XiuConfig().img:
-            pic = await get_msg_pic(f"@{event.sender.nickname}\n" + msg)
-            await choujiang.finish(MessageSegment.image(pic), at_sender=True)
-        else:
-            await choujiang.finish(f"@{event.sender.nickname}\n" + msg, at_sender=True)
+        await send_img_msg(bot, event, msg)
 
     elif arg == "药材1连":
         if user_info.stone < ls_yc:
             msg = "对不起，{}道友所持有的灵石不足以进行{}祈愿，请准备好充足的{}枚灵石再来祈愿，谢谢！".format(user_info.user_name, arg, ls_yc)
-            if XiuConfig().img:
-                pic = await get_msg_pic(f"@{event.sender.nickname}\n" + msg)
-                await choujiang.finish(MessageSegment.image(pic), at_sender=True)
-            else:
-                await choujiang.finish(f"@{event.sender.nickname}\n" + msg, at_sender=True)
+            await send_img_msg(bot, event, msg)
         yaocai_data = items.get_data_by_item_type(['药材'])
         random_yaocai_id = get_random_id(yaocai_data)
         random_yaocai_info = items.get_data_by_item_id(random_yaocai_id)
         sql_message.send_back(user_id, random_yaocai_id, random_yaocai_info['name'], random_yaocai_info['type'], 1, 0)
         sql_message.update_ls(user_id, ls_yc, 2)
         msg = "恭喜{}道友消耗{}枚灵石祈愿获得{}：{}！！！欢迎下次再来！！！".format(user_info.user_name, ls_gf, random_yaocai_info['level'], random_yaocai_info['name'])
-        if XiuConfig().img:
-            pic = await get_msg_pic(f"@{event.sender.nickname}\n" + msg)
-            await choujiang.finish(MessageSegment.image(pic), at_sender=True)
-        else:
-            await choujiang.finish(f"@{event.sender.nickname}\n" + msg, at_sender=True)
+        await send_img_msg(bot, event, msg)
 
     elif arg == "药材10连":
         if user_info.stone < ls_yc_10:
             msg = "对不起，{}道友所持有的灵石不足以进行{}祈愿，请准备好充足的{}枚灵石再来祈愿，谢谢！".format(user_info.user_name, arg, ls_yc_10)
-            if XiuConfig().img:
-                pic = await get_msg_pic(f"@{event.sender.nickname}\n" + msg)
-                await choujiang.finish(MessageSegment.image(pic), at_sender=True)
-            else:
-                await choujiang.finish(f"@{event.sender.nickname}\n" + msg, at_sender=True)
+            await send_img_msg(bot, event, msg)
         for x in range(10):
             yaocai_data = items.get_data_by_item_type(['药材'])
             random_yaocai_id = get_random_id(yaocai_data)
@@ -370,19 +254,11 @@ async def _(bot: Bot, event: MessageEvent, args: Message = CommandArg()):
             msg += "{}：{}\n".format(random_yaocai_info['level'], random_yaocai_info['name'])
         sql_message.update_ls(user_id, ls_yc_10, 2)
         msg = "恭喜{}道友消耗{}枚灵石祈愿获得\n".format(user_info.user_name, ls_yc_10) + msg + "！！！欢迎下次再来！！！"
-        if XiuConfig().img:
-            pic = await get_msg_pic(f"@{event.sender.nickname}\n" + msg)
-            await choujiang.finish(MessageSegment.image(pic), at_sender=True)
-        else:
-            await choujiang.finish(f"@{event.sender.nickname}\n" + msg, at_sender=True)
+        await send_img_msg(bot, event, msg)
 
     else:
         msg = "请获取帮助后输入正确的祈愿格式，道友输入的内容不存在或未开放！"
-        if XiuConfig().img:
-            pic = await get_msg_pic(f"@{event.sender.nickname}\n" + msg)
-            await choujiang.finish(MessageSegment.image(pic), at_sender=True)
-        else:
-            await choujiang.finish(f"@{event.sender.nickname}\n" + msg, at_sender=True)
+        await send_img_msg(bot, event, msg) 
 
 
 async def get_group_id(session_id):

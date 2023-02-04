@@ -15,7 +15,7 @@ from nonebot.adapters.onebot.v11 import (
 from nonebot.permission import SUPERUSER, Permission
 from nonebot.log import logger
 from nonebot.params import CommandArg, RegexGroup
-from ..utils import data_check_conf, check_user, send_forward_msg, get_msg_pic
+from ..utils import data_check_conf, check_user, send_forward_msg, get_msg_pic, send_img_msg
 from ..xiuxian2_handle import XiuxianDateManage, OtherSet
 from ..item_json import Items
 from ..data_source import jsondata
@@ -281,54 +281,30 @@ async def _(bot: Bot, event: MessageEvent, args: Message = CommandArg()):
         await data_check_conf(bot, event)
         isUser, user_info, msg = check_user(event)
         if not isUser:
-            if XiuConfig().img:
-                pic = await get_msg_pic(msg)
-                await buy.finish(MessageSegment.image(pic), at_sender=True)
-            else:
-                await buy.finish(msg, at_sender=True)
+            await send_img_msg(bot, event, msg)
         user_id, group_id, mess = await data_check(bot, event)
         group_id = str(group_id)
         shop_data = get_shop_data(group_id)
         if shop_data[group_id] == {}:
             msg = "坊市目前空空如也！"
-            if XiuConfig().img:
-                pic = await get_msg_pic(msg)
-                await buy.finish(MessageSegment.image(pic), at_sender=True)
-            else:
-                await buy.finish(msg, at_sender=True)
+            await send_img_msg(bot, event, msg)
         arg = args.extract_plain_text().strip()
         try:
             arg = int(arg)
             if arg <= 0 or arg > len(shop_data[group_id]):
                 msg = "请输入正确的编号！"
-                if XiuConfig().img:
-                    pic = await get_msg_pic(msg)
-                    await buy.finish(MessageSegment.image(pic), at_sender=True)
-                else:
-                    await buy.finish(msg, at_sender=True)
+                await send_img_msg(bot, event, msg)
         except ValueError:
             msg = "请输入正确的编号！"
-            if XiuConfig().img:
-                pic = await get_msg_pic(msg)
-                await buy.finish(MessageSegment.image(pic), at_sender=True)
-            else:
-                await buy.finish(msg, at_sender=True)
+            await send_img_msg(bot, event, msg)
 
         goods_price = shop_data[group_id][str(arg)]['price']
         if user_info.stone < goods_price:
             msg = '没钱还敢来买东西！！'
-            if XiuConfig().img:
-                pic = await get_msg_pic(msg)
-                await buy.finish(MessageSegment.image(pic), at_sender=True)
-            else:
-                await buy.finish(msg, at_sender=True)
+            await send_img_msg(bot, event, msg)
         elif int(user_id) == int(shop_data[group_id][str(arg)]['user_id']):
             msg = "道友自己的东西就不要自己购买啦！"
-            if XiuConfig().img:
-                pic = await get_msg_pic(msg)
-                await buy.finish(MessageSegment.image(pic), at_sender=True)
-            else:
-                await buy.finish(msg, at_sender=True)
+            await send_img_msg(bot, event, msg)
         else:
             sql_message.update_ls(user_id, goods_price, 2)
             shop_user_id = shop_data[group_id][str(arg)]['user_id']
@@ -337,7 +313,7 @@ async def _(bot: Bot, event: MessageEvent, args: Message = CommandArg()):
             shop_goods_id = shop_data[group_id][str(arg)]['goods_id']
             shop_goods_type = shop_data[group_id][str(arg)]['goods_type']
             sql_message.send_back(user_id, shop_goods_id,
-                                  shop_goods_name, shop_goods_type, 1)
+                                shop_goods_name, shop_goods_type, 1)
             if shop_user_id == 0:  # 0为系统
                 msg = f"道友成功购买物品{shop_goods_name}，消耗灵石{goods_price}枚！"
             else:
@@ -358,11 +334,7 @@ async def _(bot: Bot, event: MessageEvent, args: Message = CommandArg()):
                     pass
             shop_data[group_id] = reset_dict_num(shop_data[group_id])
             save_shop(shop_data)
-            if XiuConfig().img:
-                pic = await get_msg_pic(msg)
-                await buy.finish(MessageSegment.image(pic), at_sender=True)
-            else:
-                await buy.finish(msg, at_sender=True)
+            await send_img_msg(bot, event, msg)
 
 
 @shop.handle()
@@ -372,11 +344,7 @@ async def _(bot: Bot, event: MessageEvent):
 
     isUser, user_info, msg = check_user(event)
     if not isUser:
-        if XiuConfig().img:
-            pic = await get_msg_pic(msg)
-            await shop.finish(MessageSegment.image(pic), at_sender=True)
-        else:
-            await shop.finish(msg, at_sender=True)
+        await send_img_msg(bot, event, msg)
 
     user_id, group_id, mess = await data_check(bot, event)
     group_id = str(group_id)
@@ -384,11 +352,7 @@ async def _(bot: Bot, event: MessageEvent):
     data_list = []
     if shop_data[group_id] == {}:
         msg = "坊市目前空空如也！"
-        if XiuConfig().img:
-            pic = await get_msg_pic(msg)
-            await shop.finish(MessageSegment.image(pic), at_sender=True)
-        else:
-            await shop.finish(msg, at_sender=True)
+        await send_img_msg(bot, event, msg)
 
     for k, v in shop_data[group_id].items():
         msg = f"编号：{k}\n"
@@ -405,11 +369,7 @@ async def _(bot: Bot, event: MessageEvent):
         await shop.finish()
     elif isinstance(event, GuildMessageEvent):
         msg = ' '.join(data_list)
-        if XiuConfig().img:
-            pic = await get_msg_pic(msg)
-            await shop.finish(MessageSegment.image(pic), at_sender=True)
-        else:
-            await shop.finish(msg, at_sender=True)
+        await send_img_msg(bot, event, msg)
 
 
 @shop_added_by_admin.handle()
@@ -419,11 +379,7 @@ async def _(bot: Bot, event: MessageEvent, args: Message = CommandArg()):
     args = args.extract_plain_text().split()
     if args == []:
         msg = "请输入正确指令！例如：系统坊市上架 物品 金额"
-        if XiuConfig().img:
-            pic = await get_msg_pic(msg)
-            await shop_added_by_admin.finish(MessageSegment.image(pic), at_sender=True)
-        else:
-            await shop_added_by_admin.finish(msg, at_sender=True)
+        await send_img_msg(bot, event, msg)
     goods_name = args[0]
     goods_id = -1
     for k, v in items.items.items():
@@ -434,46 +390,26 @@ async def _(bot: Bot, event: MessageEvent, args: Message = CommandArg()):
             continue
     if goods_id == -1:
         msg = f"不存在物品：{goods_name}的信息，请检查名字是否输入正确！"
-        if XiuConfig().img:
-            pic = await get_msg_pic(msg)
-            await shop_added_by_admin.finish(MessageSegment.image(pic), at_sender=True)
-        else:
-            await shop_added_by_admin.finish(msg, at_sender=True)
+        await send_img_msg(bot, event, msg)
 
     try:
         price = args[1]
     except IndexError:
         msg = "请输入正确指令！例如：系统坊市上架 物品 金额"
-        if XiuConfig().img:
-            pic = await get_msg_pic(msg)
-            await shop_added_by_admin.finish(MessageSegment.image(pic), at_sender=True)
-        else:
-            await shop_added_by_admin.finish(msg, at_sender=True)
+        await send_img_msg(bot, event, msg)
     try:
         price = int(price)
         if price < 0:
             msg = "请不要设置负数！"
-            if XiuConfig().img:
-                pic = await get_msg_pic(msg)
-                await shop_added_by_admin.finish(MessageSegment.image(pic), at_sender=True)
-            else:
-                await shop_added_by_admin.finish(msg, at_sender=True)
+            await send_img_msg(bot, event, msg)
     except ValueError:
         msg = "请输入正确的金额！"
-        if XiuConfig().img:
-            pic = await get_msg_pic(msg)
-            await shop_added_by_admin.finish(MessageSegment.image(pic), at_sender=True)
-        else:
-            await shop_added_by_admin.finish(msg, at_sender=True)
+        await send_img_msg(bot, event, msg)
 
     try:
         args[2]
         msg = "请输入正确指令！例如：系统坊市上架 物品 金额"
-        if XiuConfig().img:
-            pic = await get_msg_pic(msg)
-            await shop_added_by_admin.finish(MessageSegment.image(pic), at_sender=True)
-        else:
-            await shop_added_by_admin.finish(msg, at_sender=True)
+        await send_img_msg(bot, event, msg)
     except IndexError:
         pass
 
@@ -495,11 +431,7 @@ async def _(bot: Bot, event: MessageEvent, args: Message = CommandArg()):
     shop_data[group_id][id]['user_name'] = '系统'
     save_shop(shop_data)
     msg = f"物品：{goods_name}成功上架坊市，金额：{price}枚灵石！"
-    if XiuConfig().img:
-        pic = await get_msg_pic(msg)
-        await shop_added_by_admin.finish(MessageSegment.image(pic), at_sender=True)
-    else:
-        await shop_added_by_admin.finish(msg, at_sender=True)
+    await send_img_msg(bot, event, msg)
 
 
 @shop_added.handle()
@@ -508,30 +440,18 @@ async def _(bot: Bot, event: MessageEvent, args: Message = CommandArg()):
     await data_check_conf(bot, event)
     isUser, user_info, msg = check_user(event)
     if not isUser:
-        if XiuConfig().img:
-            pic = await get_msg_pic(msg)
-            await shop_added.finish(MessageSegment.image(pic), at_sender=True)
-        else:
-            await shop_added.finish(msg, at_sender=True)
+        await send_img_msg(bot, event, msg)
     user_id = user_info.user_id
     args = args.extract_plain_text().split()
     if args == []:
         msg = "请输入正确指令！例如：坊市上架 物品 金额"
-        if XiuConfig().img:
-            pic = await get_msg_pic(msg)
-            await shop_added.finish(MessageSegment.image(pic), at_sender=True)
-        else:
-            await shop_added.finish(msg, at_sender=True)
+        await send_img_msg(bot, event, msg)
     goods_name = args[0]
 
     back_msg = sql_message.get_back_msg(user_id)  # 背包sql信息,list(back)
     if back_msg == None:
         msg = "道友的背包空空如也！"
-        if XiuConfig().img:
-            pic = await get_msg_pic(msg)
-            await shop_added.finish(MessageSegment.image(pic), at_sender=True)
-        else:
-            await shop_added.finish(msg, at_sender=True)
+        await send_img_msg(bot, event, msg)
     in_flag = False  # 判断指令是否正确，道具是否在背包内
     for back in back_msg:
         if goods_name == back.goods_name:
@@ -544,63 +464,35 @@ async def _(bot: Bot, event: MessageEvent, args: Message = CommandArg()):
             break
     if not in_flag:
         msg = f"请检查该道具 {goods_name} 是否在背包内！"
-        if XiuConfig().img:
-            pic = await get_msg_pic(msg)
-            await shop_added.finish(MessageSegment.image(pic), at_sender=True)
-        else:
-            await shop_added.finish(msg, at_sender=True)
+        await send_img_msg(bot, event, msg)
     try:
         price = args[1]
     except IndexError:
         msg = "请输入正确的指令！例如：坊市上架 物品 金额"
-        if XiuConfig().img:
-            pic = await get_msg_pic(msg)
-            await shop_added.finish(MessageSegment.image(pic), at_sender=True)
-        else:
-            await shop_added.finish(msg, at_sender=True)
+        await send_img_msg(bot, event, msg)
     try:
         price = int(price)
         if price < 0:
             msg = "请不要设置负数！"
-            if XiuConfig().img:
-                pic = await get_msg_pic(msg)
-                await shop_added.finish(MessageSegment.image(pic), at_sender=True)
-            else:
-                await shop_added.finish(msg, at_sender=True)
+            await send_img_msg(bot, event, msg)
     except ValueError:
         msg = "请输入正确的金额！"
-        if XiuConfig().img:
-            pic = await get_msg_pic(msg)
-            await shop_added.finish(MessageSegment.image(pic), at_sender=True)
-        else:
-            await shop_added.finish(msg, at_sender=True)
+        await send_img_msg(bot, event, msg)
 
     try:
         args[2]
         msg = "请输入正确的指令！例如：坊市上架 物品 金额"
-        if XiuConfig().img:
-            pic = await get_msg_pic(msg)
-            await shop_added.finish(MessageSegment.image(pic), at_sender=True)
-        else:
-            await shop_added.finish(msg, at_sender=True)
+        await send_img_msg(bot, event, msg)
     except IndexError:
         pass
 
     if goods_type == "装备" and int(goods_state) == 1 and int(goods_num) == 1:
         msg = f"装备：{goods_name}已经被道友装备在身，无法上架！"
-        if XiuConfig().img:
-            pic = await get_msg_pic(msg)
-            await shop_added.finish(MessageSegment.image(pic), at_sender=True)
-        else:
-            await shop_added.finish(msg, at_sender=True)
+        await send_img_msg(bot, event, msg)
 
     if goods_type == "丹药" and int(goods_num) <= int(goods_bind_num):
         msg = f"该物品是绑定物品，无法上架！"
-        if XiuConfig().img:
-            pic = await get_msg_pic(msg)
-            await shop_added.finish(MessageSegment.image(pic), at_sender=True)
-        else:
-            await shop_added.finish(msg, at_sender=True)
+        await send_img_msg(bot, event, msg)
 
     user_id, group_id, mess = await data_check(bot, event)
     group_id = str(group_id)
@@ -620,11 +512,7 @@ async def _(bot: Bot, event: MessageEvent, args: Message = CommandArg()):
     sql_message.update_back_j(user_id, goods_id)
     save_shop(shop_data)
     msg = f"物品：{goods_name}成功上架坊市，金额：{price}枚灵石！"
-    if XiuConfig().img:
-        pic = await get_msg_pic(msg)
-        await shop_added.finish(MessageSegment.image(pic), at_sender=True)
-    else:
-        await shop_added.finish(msg, at_sender=True)
+    await send_img_msg(bot, event, msg)
 
 
 @shop_off.handle()
@@ -637,39 +525,23 @@ async def _(bot: Bot, event: MessageEvent, args: Message = CommandArg()):
         is_guild_owner = await _guild_owner(bot, event)
         is_guild_admin = await _guild_admin(bot, event)
     if not isUser:
-        if XiuConfig().img:
-            pic = await get_msg_pic(msg)
-            await shop_off.finish(MessageSegment.image(pic), at_sender=True)
-        else:
-            await shop_off.finish(msg, at_sender=True)
+        await send_img_msg(bot, event, msg)
     user_id, group_id, mess = await data_check(bot, event)
     group_id = str(group_id)
     shop_data = get_shop_data(group_id)
     if shop_data[group_id] == {}:
         msg = "坊市目前空空如也！"
-        if XiuConfig().img:
-            pic = await get_msg_pic(msg)
-            await shop_off.finish(MessageSegment.image(pic), at_sender=True)
-        else:
-            await shop_off.finish(msg, at_sender=True)
+        await send_img_msg(bot, event, msg)
 
     arg = args.extract_plain_text().strip()
     try:
         arg = int(arg)
         if arg <= 0 or arg > len(shop_data[group_id]):
             msg = "请输入正确的编号！"
-            if XiuConfig().img:
-                pic = await get_msg_pic(msg)
-                await shop_off.finish(MessageSegment.image(pic), at_sender=True)
-            else:
-                await shop_off.finish(msg, at_sender=True)
+            await send_img_msg(bot, event, msg)
     except ValueError:
         msg = "请输入正确的编号！"
-        if XiuConfig().img:
-            pic = await get_msg_pic(msg)
-            await shop_off.finish(MessageSegment.image(pic), at_sender=True)
-        else:
-            await shop_off.finish(msg, at_sender=True)
+        await send_img_msg(bot, event, msg)
 
     if shop_data[group_id][str(arg)]['user_id'] == user_id:
         sql_message.send_back(user_id, shop_data[group_id][str(arg)]['goods_id'], shop_data[group_id][str(
@@ -678,11 +550,7 @@ async def _(bot: Bot, event: MessageEvent, args: Message = CommandArg()):
         del shop_data[group_id][str(arg)]
         shop_data[group_id] = reset_dict_num(shop_data[group_id])
         save_shop(shop_data)
-        if XiuConfig().img:
-            pic = await get_msg_pic(msg)
-            await shop_off.finish(MessageSegment.image(pic), at_sender=True)
-        else:
-            await shop_off.finish(msg, at_sender=True)
+        await send_img_msg(bot, event, msg)
 
     elif event.sender.role == "admin" or event.sender.role == "owner" or is_guild_superuser or is_guild_owner or _guild_admin:
         # 这么写为了防止bot.send发送失败，不结算
@@ -691,11 +559,7 @@ async def _(bot: Bot, event: MessageEvent, args: Message = CommandArg()):
             del shop_data[group_id][str(arg)]
             shop_data[group_id] = reset_dict_num(shop_data[group_id])
             save_shop(shop_data)
-            if XiuConfig().img:
-                pic = await get_msg_pic(msg)
-                await shop_off.finish(MessageSegment.image(pic), at_sender=True)
-            else:
-                await shop_off.finish(msg, at_sender=True)
+            await send_img_msg(bot, event, msg)
         else:
             sql_message.send_back(shop_data[group_id][str(arg)]['user_id'], shop_data[group_id][str(
                 arg)]['goods_id'], shop_data[group_id][str(arg)]['goods_name'], shop_data[group_id][str(arg)]['goods_type'], 1)
@@ -715,18 +579,10 @@ async def _(bot: Bot, event: MessageEvent, args: Message = CommandArg()):
             except ActionFailed:
                 pass
 
-            if XiuConfig().img:
-                pic = await get_msg_pic(msg)
-                await shop_off.finish(MessageSegment.image(pic), at_sender=True)
-            else:
-                await shop_off.finish(msg, at_sender=True)
+            await send_img_msg(bot, event, msg)
     else:
         msg = "这东西不是你的！"
-        if XiuConfig().img:
-            pic = await get_msg_pic(msg)
-            await shop_off.finish(MessageSegment.image(pic), at_sender=True)
-        else:
-            await shop_off.finish(msg, at_sender=True)
+        await send_img_msg(bot, event, msg)
 
 
 @mind_back.handle()
@@ -735,11 +591,7 @@ async def _(bot: Bot, event: MessageEvent, args: Message = CommandArg()):
     await data_check_conf(bot, event)
     isUser, user_info, msg = check_user(event)
     if not isUser:
-        if XiuConfig().img:
-            pic = await get_msg_pic(msg)
-            await mind_back.finish(MessageSegment.image(pic), at_sender=True)
-        else:
-            await mind_back.finish(msg, at_sender=True)
+        await send_img_msg(bot, event, msg)
     user_id = user_info.user_id
 
     # ["user_id", "goods_id", "goods_name", "goods_type", "goods_num", "create_time", "update_time",
@@ -752,18 +604,10 @@ async def _(bot: Bot, event: MessageEvent, args: Message = CommandArg()):
             await mind_back.finish()
         elif isinstance(event, GuildMessageEvent):
             msg = ' '.join(msg)
-            if XiuConfig().img:
-                pic = await get_msg_pic(msg)
-                await mind_back.finish(MessageSegment.image(pic), at_sender=True)
-            else:
-                await mind_back.finish(msg, at_sender=True)
+            await send_img_msg(bot, event, msg)
     else:
         msg = '道友的背包空空如也！'
-        if XiuConfig().img:
-            pic = await get_msg_pic(msg)
-            await mind_back.finish(MessageSegment.image(pic), at_sender=True)
-        else:
-            await mind_back.finish(msg, at_sender=True)
+        await send_img_msg(bot, event, msg)
 
 
 @use.handle()
@@ -775,11 +619,7 @@ async def _(bot: Bot, event: MessageEvent, args: Message = CommandArg()):
     await data_check_conf(bot, event)
     isUser, user_info, msg = check_user(event)
     if not isUser:
-        if XiuConfig().img:
-            pic = await get_msg_pic(msg)
-            await use.finish(MessageSegment.image(pic), at_sender=True)
-        else:
-            await use.finish(msg, at_sender=True)
+        await send_img_msg(bot, event, msg)
     user_id = user_info.user_id
     # await use.finish('调试中，未开启！')
     arg = args.extract_plain_text().split()
@@ -787,20 +627,12 @@ async def _(bot: Bot, event: MessageEvent, args: Message = CommandArg()):
         name = arg[0]
     except IndexError:
         msg = f"请输入正确的指令！"
-        if XiuConfig().img:
-            pic = await get_msg_pic(msg)
-            await use.finish(MessageSegment.image(pic), at_sender=True)
-        else:
-            await use.finish(msg, at_sender=True)
+        await send_img_msg(bot, event, msg)
 
     back_msg = sql_message.get_back_msg(user_id)  # 背包sql信息,list(back)
     if back_msg == None:
         msg = "道友的背包空空如也！"
-        if XiuConfig().img:
-            pic = await get_msg_pic(msg)
-            await use.finish(MessageSegment.image(pic), at_sender=True)
-        else:
-            await use.finish(msg, at_sender=True)
+        await send_img_msg(bot, event, msg)
     in_flag = False  # 判断指令是否正确，道具是否在背包内
     for back in back_msg:
         if name == back.goods_name:
@@ -811,20 +643,12 @@ async def _(bot: Bot, event: MessageEvent, args: Message = CommandArg()):
             break
     if not in_flag:
         msg = f"请检查该道具 {name} 是否在背包内！"
-        if XiuConfig().img:
-            pic = await get_msg_pic(msg)
-            await use.finish(MessageSegment.image(pic), at_sender=True)
-        else:
-            await use.finish(msg, at_sender=True)
+        await send_img_msg(bot, event, msg)
 
     if goods_type == "装备":
         if not check_equipment_can_use(user_id, goods_id):
             msg = f"该装备已被装备，请勿重复装备！"
-            if XiuConfig().img:
-                pic = await get_msg_pic(msg)
-                await use.finish(MessageSegment.image(pic), at_sender=True)
-            else:
-                await use.finish(msg, at_sender=True)
+            await send_img_msg(bot, event, msg)
         else:  # 可以装备
             sql_str, item_type = get_use_equipment_sql(user_id, goods_id)
             for sql in sql_str:
@@ -834,11 +658,7 @@ async def _(bot: Bot, event: MessageEvent, args: Message = CommandArg()):
             if item_type == "防具":
                 sql_message.updata_user_armor_buff(user_id, goods_id)
             msg = f"成功装备{name}！"
-            if XiuConfig().img:
-                pic = await get_msg_pic(msg)
-                await use.finish(MessageSegment.image(pic), at_sender=True)
-            else:
-                await use.finish(msg, at_sender=True)
+            await send_img_msg(bot, event, msg)
     elif goods_type == "技能":
         user_buff_info = UserBuffDate(user_id).BuffInfo
         skill_info = items.get_data_by_item_id(goods_id)
@@ -860,11 +680,7 @@ async def _(bot: Bot, event: MessageEvent, args: Message = CommandArg()):
         else:
             msg = "发生未知错误！"
 
-        if XiuConfig().img:
-            pic = await get_msg_pic(msg)
-            await use.finish(MessageSegment.image(pic), at_sender=True)
-        else:
-            await use.finish(msg, at_sender=True)
+        await send_img_msg(bot, event, msg)
     elif goods_type == "丹药":
 
         try:
@@ -882,41 +698,21 @@ async def _(bot: Bot, event: MessageEvent, args: Message = CommandArg()):
 
         if check_num:
             msg = '请输入正确的使用数量！'
-            if XiuConfig().img:
-                pic = await get_msg_pic(msg)
-                await use.finish(MessageSegment.image(pic), at_sender=True)
-            else:
-                await use.finish(msg, at_sender=True)
+            await send_img_msg(bot, event, msg)
 
         if goods_num < use_num:
             msg = f'背包内{name}的数量为{goods_num}，不足{use_num}个！'
-            if XiuConfig().img:
-                pic = await get_msg_pic(msg)
-                await use.finish(MessageSegment.image(pic), at_sender=True)
-            else:
-                await use.finish(msg, at_sender=True)
+            await send_img_msg(bot, event, msg)
 
         msg = check_use_elixir(user_id, goods_id, use_num=use_num)
-        if XiuConfig().img:
-            pic = await get_msg_pic(msg)
-            await use.finish(MessageSegment.image(pic), at_sender=True)
-        else:
-            await use.finish(msg, at_sender=True)
+        await send_img_msg(bot, event, msg)
 
     elif goods_type == "聚灵旗":
         msg = get_use_jlq_msg(user_id, goods_id)
-        if XiuConfig().img:
-            pic = await get_msg_pic(msg)
-            await use.finish(MessageSegment.image(pic), at_sender=True)
-        else:
-            await use.finish(msg, at_sender=True)
+        await send_img_msg(bot, event, msg)
     else:
         msg = '该类型物品调试中，未开启！'
-        if XiuConfig().img:
-            pic = await get_msg_pic(msg)
-            await use.finish(MessageSegment.image(pic), at_sender=True)
-        else:
-            await use.finish(msg, at_sender=True)
+        await send_img_msg(bot, event, msg)
 
 
 @creat_auction.handle()
@@ -926,31 +722,19 @@ async def _(bot: Bot, event: MessageEvent, args: Message = CommandArg()):
 
     if group_id not in groups:
         msg = '本群尚未开启交友会功能，请联系管理员开启！'
-        if XiuConfig().img:
-            pic = await get_msg_pic(msg)
-            await creat_auction.finish(MessageSegment.image(pic), at_sender=True)
-        else:
-            await creat_auction.finish(msg, at_sender=True)
+        await send_img_msg(bot, event, msg)
 
     global auction
     if auction != {}:
         msg = f'本群已存在一场交友会，请等待交友会结束！'
-        if XiuConfig().img:
-            pic = await get_msg_pic(msg)
-            await creat_auction.finish(MessageSegment.image(pic), at_sender=True)
-        else:
-            await creat_auction.finish(msg, at_sender=True)
+        await send_img_msg(bot, event, msg)
 
     try:
         auction_id_list = get_auction_id_list()
         auction_id = random.choice(auction_id_list)
     except IndexError:
         msg = "获取不到交友物品的信息，请检查配置文件！"
-        if XiuConfig().img:
-            pic = await get_msg_pic(msg)
-            await creat_auction.finish(MessageSegment.image(pic), at_sender=True)
-        else:
-            await creat_auction.finish(msg, at_sender=True)
+        await send_img_msg(bot, event, msg)
 
     auction_info = items.get_data_by_item_id(auction_id)
     start_price = get_auction_price_by_id(auction_id)['start_price']
@@ -1081,56 +865,32 @@ async def _(bot: Bot, event: MessageEvent, args: Message = CommandArg()):
     user_id, group_id, mess = await data_check(bot, event)
     if group_id not in groups:
         msg = '本群尚未开启交友会功能，请联系管理员开启！'
-        if XiuConfig().img:
-            pic = await get_msg_pic(msg)
-            await offer_auction.finish(MessageSegment.image(pic), at_sender=True)
-        else:
-            await offer_auction.finish(msg, at_sender=True)
+        await send_img_msg(bot, event, msg)
 
     isUser, user_info, msg = check_user(event)
     if not isUser:
-        if XiuConfig().img:
-            pic = await get_msg_pic(msg)
-            await offer_auction.finish(MessageSegment.image(pic), at_sender=True)
-        else:
-            await offer_auction.finish(msg, at_sender=True)
+        await send_img_msg(bot, event, msg)
 
     global auction
     if auction == {}:
         msg = f'本群不存在交友会，请等待交友会开启！'
-        if XiuConfig().img:
-            pic = await get_msg_pic(msg)
-            await offer_auction.finish(MessageSegment.image(pic), at_sender=True)
-        else:
-            await offer_auction.finish(msg, at_sender=True)
+        await send_img_msg(bot, event, msg)
 
     price = args.extract_plain_text().strip()
     try:
         price = int(price)
     except ValueError:
         msg = f"请发送正确的灵石数量"
-        if XiuConfig().img:
-            pic = await get_msg_pic(msg)
-            await offer_auction.finish(MessageSegment.image(pic), at_sender=True)
-        else:
-            await offer_auction.finish(msg, at_sender=True)
+        await send_img_msg(bot, event, msg)
 
     now_price = auction['now_price']
     min_price = int(now_price * 0.05)  # 最低加价5%
     if price <= 0 or price <= auction['now_price'] or price > user_info.stone:
         msg = f"走开走开，别捣乱！小心清空你灵石捏！"
-        if XiuConfig().img:
-            pic = await get_msg_pic(msg)
-            await offer_auction.finish(MessageSegment.image(pic), at_sender=True)
-        else:
-            await offer_auction.finish(msg, at_sender=True)
+        await send_img_msg(bot, event, msg)
     if price - now_price < min_price:
         msg = f"交友不得少于当前竞拍价的5%，目前最少加价为：{min_price}灵石，目前竞拍价为：{now_price}！"
-        if XiuConfig().img:
-            pic = await get_msg_pic(msg)
-            await offer_auction.finish(MessageSegment.image(pic), at_sender=True)
-        else:
-            await offer_auction.finish(msg, at_sender=True)
+        await send_img_msg(bot, event, msg)
 
     global auction_offer_flag, auction_offer_time_count, auction_offer_all_count
     auction_offer_flag = True  # 有人交友
@@ -1171,12 +931,7 @@ async def _(bot: Bot, event: MessageEvent, args: Message = CommandArg()):
     if error_msg == '':
         await offer_auction.finish()
     else:
-        if XiuConfig().img:
-            msg = error_msg
-            pic = await get_msg_pic(msg)
-            await offer_auction.finish(MessageSegment.image(pic), at_sender=True)
-        else:
-            await offer_auction.finish(msg, at_sender=True)
+        await send_img_msg(bot, event, msg=error_msg)
 
 
 @set_auction.handle()
@@ -1189,46 +944,26 @@ async def _(bot: Bot, event: MessageEvent, args: Message = CommandArg()):
     if mode == '开启':
         if is_in_group:
             msg = f'本群已开启群交流会，请勿重复开启!'
-            if XiuConfig().img:
-                pic = await get_msg_pic(msg)
-                await set_auction.finish(MessageSegment.image(pic), at_sender=True)
-            else:
-                await set_auction.finish(msg, at_sender=True)
+            await send_img_msg(bot, event, msg)
         else:
             config['open'].append(group_id)
             savef(config)
             msg = "已开启群交流会"
-            if XiuConfig().img:
-                pic = await get_msg_pic(msg)
-                await set_auction.finish(MessageSegment.image(pic), at_sender=True)
-            else:
-                await set_auction.finish(msg, at_sender=True)
+            await send_img_msg(bot, event, msg)
 
     elif mode == '关闭':
         if is_in_group:
             config['open'].remove(group_id)
             savef(config)
             msg = f'已关闭本群交流会!'
-            if XiuConfig().img:
-                pic = await get_msg_pic(msg)
-                await set_auction.finish(MessageSegment.image(pic), at_sender=True)
-            else:
-                await set_auction.finish(msg, at_sender=True)
+            await send_img_msg(bot, event, msg)
         else:
             msg = f'本群未开启群交流会!'
-            if XiuConfig().img:
-                pic = await get_msg_pic(msg)
-                await set_auction.finish(MessageSegment.image(pic), at_sender=True)
-            else:
-                await set_auction.finish(msg, at_sender=True)
+            await send_img_msg(bot, event, msg)
 
     else:
         msg = __back_help__
-        if XiuConfig().img:
-            pic = await get_msg_pic(msg)
-            await set_auction.finish(MessageSegment.image(pic), at_sender=True)
-        else:
-            await set_auction.finish(msg, at_sender=True)
+        await send_img_msg(bot, event, msg)
 
 
 def reset_dict_num(dict):

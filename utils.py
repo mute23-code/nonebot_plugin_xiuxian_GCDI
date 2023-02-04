@@ -3,6 +3,7 @@ from nonebot.adapters.onebot.v11 import (
     Bot,
     MessageEvent,
     GroupMessageEvent,
+    MessageSegment
 )
 import math
 from base64 import b64encode
@@ -12,7 +13,7 @@ from wcwidth import wcwidth
 import re
 from nonebot_plugin_guild_patch import GuildMessageEvent
 from .data_source import jsondata
-from .xiuxian_config import JsonConfig
+from .xiuxian_config import XiuConfig, JsonConfig
 
 def check_user_type(user_id, need_type):
     """
@@ -148,6 +149,22 @@ async def data_check_conf(bot, event):
             pass
     except KeyError:
         pass
+
+
+async def send_img_msg(bot, event, msg, img = True, img_at = True):
+    """
+    发送图片消息（可选）
+    msg: 消息
+    img: 为 True 时发送图片，为 False 时发送文本（默认为 True
+    """
+    if img == True:
+        if img_at == True:      
+            pic = await get_msg_pic(f"@{event.sender.nickname}\n" + msg)
+        else:
+            pic = await get_msg_pic(msg)
+        await bot.send(event=event, message=MessageSegment.image(pic), at_sender=True)
+    else:
+        await bot.send(event=event, message=msg, at_sender=True)
 
 
 class ConfError(ValueError):
