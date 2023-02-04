@@ -31,8 +31,6 @@ __xiuxian_notes__ = f"""
 19、启用/禁用修仙功能：当前群开启或关闭修仙功能
 20、炼丹帮助：炼丹功能
 21、修仙祈愿：发送"修仙祈愿帮助"获取
-nonebot_plugin_xiuxian_GCDI 
-基于nonebot_plugin_xiuxian二次修改
-By: 花心喵酱i
+nonebot_plugin_xiuxian_GCDI，基于nonebot_plugin_xiuxian二次修改 By: 花心喵酱i
 ver: {__xiuxian_version__}
 """.strip()
