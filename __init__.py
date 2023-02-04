@@ -48,52 +48,36 @@ sect_out_check = {}  # 退出宗门或踢出宗门信息记录
 sql_message = XiuxianDateManage()  # sql类
 
 
-# dir_ = Path(__file__).parent
-# require('nonebot_plugin_apscheduler')
+dir_ = Path(__file__).parent
+require('nonebot_plugin_apscheduler')
 
-# load_plugins(str(dir_ / "nonebot_plugin_xiuxian_GCDI"))
+load_plugins(str(dir_ / "nonebot_plugin_xiuxian_GCDI"))
 
-# logger.info("修仙插件正在加载...")
-# logo ="""<g>   
-#    _  __ _      _  __ _             ________________  ____
-#   | |/ /(_)_  _| |/ /(_)___ _____  / ____/ ____/ __ \/  _/
-#   |   // / / / /   // / __ `/ __ \/ / __/ /   / / / // /  
-#  /   |/ / /_/ /   |/ / /_/ / / / / /_/ / /___/ /_/ // /   
-# /_/|_/_/\__,_/_/|_/_/\__,_/_/ /_/\____/\____/_____/___/   
+logger.info("修仙插件正在加载...")
+logo ="""<g>   
+   _  __ _      _  __ _             ________________  ____
+  | |/ /(_)_  _| |/ /(_)___ _____  / ____/ ____/ __ \/  _/
+  |   // / / / /   // / __ `/ __ \/ / __/ /   / / / // /  
+ /   |/ / /_/ /   |/ / /_/ / / / / /_/ / /___/ /_/ // /   
+/_/|_/_/\__,_/_/|_/_/\__,_/_/ /_/\____/\____/_____/___/   
                                                                                                             
-#                                                                                                             </g>"""
-# logger.opt(colors=True).info(logo)
-# if get_plugin_by_module_name("nonebot_plugin_xiuxian_GCDI"):
-#     logger.info("推荐直接加载 nonebot_plugin_xiuxian_GCDI 仓库文件夹")
-#     load_all_plugins(
-#         [
-#             f"nonebot_plugin_xiuxian_GCDI.{module.name}"
-#             for module in iter_modules([str(Path(__file__).parent)])
-#             if module.ispkg
-#             and (
-#                 (name := module.name[11:]) == "meta"
-#                 or name not in _config.disabled_plugins
-#             )
-#         ],
-#         [],
-#     )
+                                                                                                            </g>"""
+logger.opt(colors=True).info(logo)
+if get_plugin_by_module_name("nonebot_plugin_xiuxian_GCDI"):
+    logger.info("推荐直接加载 nonebot_plugin_xiuxian_GCDI 仓库文件夹")
+    load_all_plugins(
+        [
+            f"nonebot_plugin_xiuxian_GCDI.{module.name}"
+            for module in iter_modules([str(Path(__file__).parent)])
+            if module.ispkg
+            and (
+                (name := module.name[11:]) == "meta"
+                or name not in _config.disabled_plugins
+            )
+        ],
+        [],
+    )
 
-src = "src.plugins."
-load_all_plugins(
-    [
-        f"{src}nonebot_plugin_xiuxian_GCDI.xiuxian_boss",
-        f"{src}nonebot_plugin_xiuxian_GCDI.xiuxian_bank",
-        f"{src}nonebot_plugin_xiuxian_GCDI.xiuxian_sect",
-        f"{src}nonebot_plugin_xiuxian_GCDI.xiuxian_info",
-        f"{src}nonebot_plugin_xiuxian_GCDI.xiuxian_buff",
-        f"{src}nonebot_plugin_xiuxian_GCDI.xiuxian_back",
-        f"{src}nonebot_plugin_xiuxian_GCDI.xiuxian_rift",
-        f"{src}nonebot_plugin_xiuxian_GCDI.xiuxian_mixelixir",
-        f"{src}nonebot_plugin_xiuxian_GCDI.xiuxian_work",
-        f"{src}nonebot_plugin_xiuxian_GCDI.xiuxian_pray",
-    ],
-    [],
-)
 
 @command.qq_binding.handle()
 async def _(bot: Bot, event: GuildMessageEvent, args: Message = CommandArg()) -> None:
@@ -952,82 +936,6 @@ async def _(bot: Bot, event: MessageEvent, args: Message = CommandArg()):
 
     else:
         msg = "指令错误!"
-        await send_img_msg(bot, event, msg)
-
-@command.dufang.handle()
-async def _(bot: Bot, event: MessageEvent, args: Tuple[Any, ...] = RegexGroup()):
-    await data_check_conf(bot, event)
-    
-    try:
-        user_id, group_id, mess = await data_check(bot, event)
-    except MsgError:
-        return
-
-    if cd := check_cd(event, '金银阁'):
-        # 如果 CD 还没到 则直接结束
-        await dufang.finish(cd_msg(cd), at_sender=True)
-
-    user_message = sql_message.get_user_message(user_id)
-
-    add_cd(event, XiuConfig().dufang_cd, '金银阁')
-
-    if args[2] is None:
-        msg = f"请输入正确的指令，例如金银阁10大、金银阁10奇、金银阁10猜3"
-        await send_img_msg(bot, event, msg)
-        
-
-    price = args[1]  # 300
-    mode = args[2]  # 大、小、奇、偶、猜
-    mode_num = 0
-    if mode == '猜':
-        mode_num = args[3]  # 猜的数值
-        if str(mode_num) not in ['1', '2', '3', '4', '5', '6']:
-            msg = f"请输入正确的指令，例如金银阁10大、、金银阁10奇、金银阁10猜3"
-            await send_img_msg(bot, event, msg)
-
-    price_num = int(price)
-    if int(user_message.stone) < price_num:
-        msg = "道友的金额不足，请重新输入！"
-        await send_img_msg(bot, event, msg)
-    elif price_num == 0:
-        msg = "走开走开，0块钱也赌！"
-        await send_img_msg(bot, event, msg)
-
-    value = random.randint(1, 6)
-    msg = Message("[CQ:dice,value={}]".format(value))
-
-    if value >= 4 and str(mode) == "大":
-        sql_message.update_ls(user_id, price_num, 1)
-        await dufang.send(msg)
-        msg = "最终结果为{}，你猜对了，收获灵石{}块".format(value, price_num)
-        await send_img_msg(bot, event, msg)
-        
-    elif value <= 3 and str(mode) == "小":
-        sql_message.update_ls(user_id, price_num, 1)
-        await dufang.send(msg)
-        msg = "最终结果为{}，你猜对了，收获灵石{}块".format(value, price_num)
-        await send_img_msg(bot, event, msg)
-    elif value %2==1 and str(mode) == "奇":
-        sql_message.update_ls(user_id, price_num, 1)
-        await dufang.send(msg)
-        msg = "最终结果为{}，你猜对了，收获灵石{}块".format(value, price_num)
-        await send_img_msg(bot, event, msg)
-    elif value %2==0 and str(mode) == "偶":
-        sql_message.update_ls(user_id, price_num, 1)
-        await dufang.send(msg)
-        msg = "最终结果为{}，你猜对了，收获灵石{}块".format(value, price_num)
-        await send_img_msg(bot, event, msg)
-
-    elif str(value) == str(mode_num) and str(mode) == "猜":
-        sql_message.update_ls(user_id, price_num * 5, 1)
-        await dufang.send(msg)
-        msg = "最终结果为{}，你猜对了，收获灵石{}块".format(value, price_num * 5)
-        await send_img_msg(bot, event, msg)
-
-    else:
-        sql_message.update_ls(user_id, price_num, 2)
-        await dufang.send(msg)
-        msg = "最终结果为{}，你猜错了，损失灵石{}块".format(value, price_num)
         await send_img_msg(bot, event, msg)
 
 # -----------------------------------------------------------------------------

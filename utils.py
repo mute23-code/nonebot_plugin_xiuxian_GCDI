@@ -156,6 +156,7 @@ async def send_img_msg(bot, event, msg, img = True, img_at = True):
     发送图片消息（可选）
     msg: 消息
     img: 为 True 时发送图片，为 False 时发送文本（默认为 True
+    img_at：图片中是否包含 @xxx，默认为True
     """
     if img == True:
         if img_at == True:      
