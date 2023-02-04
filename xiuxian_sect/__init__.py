@@ -572,19 +572,23 @@ async def _(bot: Bot, event: MessageEvent):
     await data_check_conf(bot, event)
 
     sectlists = sql_message.get_all_scale()
-    msg = ''
-    msg_list = []
-    for sect in sectlists:
-        # print(sect)
-        user_name = sql_message.get_user_message(sect.sect_owner).user_name
-        msg += f'编号{sect.sect_id}：{sect.sect_name}，宗主：{user_name}，宗门建设度：{sect.sect_scale}\n'
-        msg_list.append(f'编号{sect.sect_id}：{sect.sect_name}，宗主：{user_name}，宗门建设度：{sect.sect_scale}')
-    if isinstance(event, GroupMessageEvent):
-        await send_forward_msg(bot, event, '宗门列表', bot.self_id, msg_list)
-        await sect_list.finish()
-    elif isinstance(event, GuildMessageEvent):
+    if len(sectlists) == 0:
+        msg = "当前暂无宗门"
         await send_img_msg(bot, event, msg)
-    # await sect_list.finish(msg)
+    else:
+        msg = ''
+        msg_list = []
+        for sect in sectlists:
+            # print(sect)
+            user_name = sql_message.get_user_message(sect.sect_owner).user_name
+            msg += f'编号{sect.sect_id}：{sect.sect_name}，宗主：{user_name}，宗门建设度：{sect.sect_scale}\n'
+            msg_list.append(f'编号{sect.sect_id}：{sect.sect_name}，宗主：{user_name}，宗门建设度：{sect.sect_scale}')
+        if isinstance(event, GroupMessageEvent):
+            await send_forward_msg(bot, event, '宗门列表', bot.self_id, msg_list)
+            await sect_list.finish()
+        elif isinstance(event, GuildMessageEvent):
+            await send_img_msg(bot, event, msg)
+        # await sect_list.finish(msg)
 
 @sect_users.handle()
 async def _(bot: Bot, event: MessageEvent):
