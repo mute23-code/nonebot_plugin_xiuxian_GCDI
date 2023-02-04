@@ -50,7 +50,8 @@ pip install nonebot_plugin_guild_patch -i https://pypi.tuna.tsinghua.edu.cn/simp
 5、如解决不了进交流群：588907147 提问，提问请贴上完整的日志
 
 ## 配置文件
-1、配置文件一般在data/xiuxian文件夹下，自行按照json格式修改即可，一些字段的含义可以进群交流<br>
+配置文件下载地址：- [xiuxianres](https://github.com/QingMuCat/xiuxianres/tree/master)：修仙插件资源库
+1、配置文件下载后，放置BOT主目录<br>
 2、子插件的配置会在插件运行后在子插件文件中生成config.json文件，该文件字段含义在同级目录的xxxconfig.py有备注。注意：修改配置只需要修改json即可，修改.py文件的话需要删除json文件才会生效，任何修改都需要重启bot
 
 ## 更新
